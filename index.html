@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>海蛞蝓愛海蛞蝓：波光城最閃亮的婚禮 - 線上互動繪本</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- 繪本主應用容器 -->
+  <div id="book-app" class="book-container">
+    
+    <!-- 頂部浮動導覽列 -->
+    <header class="book-header">
+      <div class="header-left">
+        <span class="series-badge">性別平等・多元理解繪本</span>
+        <h1 class="book-title">海蛞蝓愛海蛞蝓</h1>
+      </div>
+      <div class="header-center">
+        <div class="page-counter">
+          <span id="cur-unit-display">1</span> / <span id="total-unit-display">14</span>
+        </div>
+        <div class="progress-track">
+          <div id="progress-fill" class="progress-bar"></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="btn-audio-narrate" class="tool-btn" title="朗讀本頁故事">
+          <span class="icon">🔊</span>
+          <span class="label">朗讀</span>
+        </button>
+        <button id="btn-toggle-sound" class="tool-btn" title="開關背景配樂">
+          <span class="icon">🎵</span>
+          <span class="label">配樂</span>
+        </button>
+        <button id="btn-fullscreen" class="tool-btn" title="全螢幕模式">
+          <span class="icon">⛶</span>
+          <span class="label">全螢幕</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 繪本雙頁/跨頁展示舞台 -->
+    <main class="book-stage" id="book-stage">
+
+      <!-- =========================================================
+           單元 1：【P1 封面】單頁滿版
+           ========================================================= -->
+      <section class="unit-screen active" id="unit-1" data-unit="1" data-type="single">
+        <div class="screen-fullbleed cover-screen">
+          <img src="images/cover.png" alt="海蛞蝓愛海蛞蝓 封面" class="fullbleed-bg-img">
+          <div class="cover-cta-wrap">
+            <button class="btn-start-reading" id="btn-start-reading">
+              <span>翻開繪本</span>
+              <span class="arrow-sparkle">✨ ➔</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 2：【P2–P3 第 1 幕】波光城的祕密與兩位老師（大跨頁）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-2" data-unit="2" data-type="spread">
+        <div class="screen-fullbleed">
+          <img src="images/spread1.jpg" alt="波光城全景與海蛞蝓老師" class="fullbleed-bg-img">
+          <div class="floating-text-box pos-top-left" data-narrate="在大海深處的波光城裡，住著亮亮和閃閃兩位海蛞蝓老師。">
+            <p>在大海深處的波光城裡，<br>住著<strong>亮亮</strong>和<strong>閃閃</strong>兩位海蛞蝓老師。</p>
+          </div>
+          <div class="floating-text-box pos-bottom-right" data-narrate="他們頭頂上的兔耳觸角輕輕碰在一起，那是專屬於他們的悄悄話。">
+            <p>他們頭頂上的兔耳觸角輕輕碰在一起，<br>那是專屬於他們的悄悄話。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 3：【P4–P5 第 2 幕】心靈相通的求婚（單頁左右對開）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-3" data-unit="3" data-type="dual-single">
+        <div class="dual-panels-wrap">
+          <!-- 左頁 P4 -->
+          <div class="single-panel panel-left">
+            <img src="images/scene2_left.jpg" alt="亮亮求婚特寫" class="panel-img">
+            <div class="floating-text-box pos-top-left" data-narrate="有一天放學後，亮亮看著閃閃，開心地說：閃閃，我有一個好棒的想法──我們結婚吧！辦一場全海洋最閃亮、最溫暖的婚禮！">
+              <p>有一天放學後，亮亮看著閃閃，開心地說：<br>
+              「閃閃，我有一個好棒的想法──<br>
+              <strong>我們結婚吧！</strong><br>
+              辦一場全海洋最閃亮、最溫暖的婚禮！」</p>
+            </div>
+          </div>
+          <!-- 右頁 P5 -->
+          <div class="single-panel panel-right">
+            <img src="images/scene2_right.jpg" alt="閃閃害羞答應特寫" class="panel-img">
+            <div class="floating-text-box pos-top-right" data-narrate="閃閃豎起兔耳觸角，害羞又開心地笑了：好呀！讓整座大海都知道──亮亮愛閃閃，閃閃也愛亮亮！">
+              <p>閃閃豎起兔耳觸角，害羞又開心地笑了：<br>
+              「好呀！讓整座大海都知道──<br>
+              <strong>亮亮愛閃閃，閃閃也愛亮亮！</strong>」</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 4：【P6–P7 第 3 幕】互動關卡 1：深海聚光燈（大跨頁遊戲）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-4" data-unit="4" data-type="game">
+        <div class="game-spread-wrap game-spotlight">
+          <div class="floating-text-box pos-top-left">
+            <span class="game-tag-pill">🌟 互動挑戰 1</span>
+            <p>婚禮的消息傳開了！<br>快拿起<strong>深海探照燈</strong>，通知波光城的好夥伴！</p>
+          </div>
+          <div class="floating-text-box pos-top-right">
+            <div class="counter-badge">已尋獲夥伴：<span id="spotlight-found-count">0</span> / 4</div>
+            <p class="sub-hint">找到海馬、螃蟹、小丑魚與老水母，解鎖大自然的奧祕！</p>
+          </div>
+
+          <div class="spotlight-stage" id="spotlight-stage">
+            <canvas id="spotlight-canvas"></canvas>
+            <!-- 隱藏在暗處的 4 位夥伴 -->
+            <div class="hidden-creature" id="creature-seahorse" data-name="海馬郵差" data-fact="海馬爸爸有神奇的育兒袋，是由爸爸負責懷孕並生下海馬寶寶的喔！" style="top: 25%; left: 18%;">
+              <span class="creature-emoji">🎠</span>
+              <span class="creature-label">海馬郵差</span>
+            </div>
+            <div class="hidden-creature" id="creature-crab" data-name="螃蟹阿姨" data-fact="螃蟹阿姨熱心又俐落，正急著幫大家把貝殼座椅排得整整齊齊！" style="top: 72%; left: 78%;">
+              <span class="creature-emoji">🦀</span>
+              <span class="creature-label">螃蟹阿姨</span>
+            </div>
+            <div class="hidden-creature" id="creature-clownfish" data-name="小丑魚巡邏隊" data-fact="小丑魚是天生的性別轉換高手，最能幹的魚會順應需要守護大家！" style="top: 36%; left: 72%;">
+              <span class="creature-emoji">🐠</span>
+              <span class="creature-label">小丑魚群</span>
+            </div>
+            <div class="hidden-creature" id="creature-jellyfish" data-name="老水母長者" data-fact="老水母在大海裡游了幾百年，擁有最溫和包容的智慧心胸！" style="top: 68%; left: 26%;">
+              <span class="creature-emoji">🪼</span>
+              <span class="creature-label">老水母</span>
+            </div>
+          </div>
+
+          <!-- 科普卡彈窗 -->
+          <div class="card-modal hidden" id="nature-card-modal">
+            <div class="modal-card-box">
+              <h3 id="modal-creature-title">🌟 生物小百科</h3>
+              <p id="modal-creature-fact">科普內容</p>
+              <button class="btn-sub-close" id="btn-close-creature-modal">收下知識卡 ✨</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 5：【P8–P9 第 4 幕】籌備現場 vs. 螃蟹阿姨大問號（單頁左右對開）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-5" data-unit="5" data-type="dual-single">
+        <div class="dual-panels-wrap">
+          <!-- 左頁 P8 -->
+          <div class="single-panel panel-left">
+            <img src="images/scene4_left.png" alt="籌備全景" class="panel-img">
+            <div class="floating-text-box pos-top-left" data-narrate="夥伴們全都趕來了！大家忙著布置，整個波光城像在開盛大的派對。">
+              <p>夥伴們全都趕來了！<br>大家忙著布置，<br>整個波光城像在開盛大的派對。</p>
+            </div>
+          </div>
+          <!-- 右頁 P9 -->
+          <div class="single-panel panel-right">
+            <img src="images/scene4_right.png" alt="螃蟹阿姨驚呆特寫" class="panel-img">
+            <div class="floating-text-box pos-top-right text-highlight" data-narrate="突然，螃蟹阿姨停下了大螯，驚訝地問：等等！海蛞蝓要結婚……那誰當新郎？誰當新娘呀？">
+              <p>突然，螃蟹阿姨停下了大螯，驚訝地問：<br>
+              <strong>「等等！海蛞蝓要結婚……<br>那誰當新郎？誰當新娘呀？」</strong></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 6：【P10–P11 第 5 幕】互動關卡 2：思維泡泡戳戳樂（大跨頁遊戲）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-6" data-unit="6" data-type="game">
+        <div class="game-spread-wrap game-bubbles">
+          <div class="floating-text-box pos-top-left">
+            <span class="game-tag-pill">🌟 互動挑戰 2</span>
+            <p>大家你看我、我看你，心裡滿是問號。<br>拖曳發光的<strong>同理珍珠</strong>，解開迷思！</p>
+          </div>
+
+          <div class="bubbles-arena" id="bubbles-arena">
+            <div class="bubble-target" data-accept="color">
+              <div class="bubble-content">
+                <span class="bubble-q">「藍色的亮亮體型大一點，一定是新郎吧？」</span>
+              </div>
+            </div>
+            <div class="bubble-target" data-accept="trait">
+              <div class="bubble-content">
+                <span class="bubble-q">「粉紅色的閃閃個性溫柔，一定是照顧家裡的新娘吧？」</span>
+              </div>
+            </div>
+            <div class="bubble-target" data-accept="binary">
+              <div class="bubble-content">
+                <span class="bubble-q">「結婚不是本來就一定要分出一個男生和女生嗎？」</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pearls-dock">
+            <div class="draggable-pearl" draggable="true" data-type="color">
+              <span class="pearl-icon">🔮</span>
+              <span class="pearl-text">色彩無界限</span>
+            </div>
+            <div class="draggable-pearl" draggable="true" data-type="trait">
+              <span class="pearl-icon">🌸</span>
+              <span class="pearl-text">特質自由</span>
+            </div>
+            <div class="draggable-pearl" draggable="true" data-type="binary">
+              <span class="pearl-icon">🌊</span>
+              <span class="pearl-text">多元的愛</span>
+            </div>
+          </div>
+          <div class="feedback-banner" id="bubble-feedback">拖曳珍珠至上方泡泡，開啟對話！</div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 7：【P12–P13 第 6 幕】亮亮閃閃解答 vs. 居民歡呼（單頁左右對開）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-7" data-unit="7" data-type="dual-single">
+        <div class="dual-panels-wrap">
+          <!-- 左頁 P12 -->
+          <div class="single-panel panel-left">
+            <img src="images/scene6_left.png" alt="亮亮閃閃從容解答" class="panel-img">
+            <div class="floating-text-box pos-top-left" data-narrate="海蛞蝓是雌雄同體，亮亮笑著說：我們不需要用框框限定自己，愛本來就不只一種形狀。">
+              <p>「海蛞蝓是雌雄同體，」亮亮笑著說：<br>
+              「我們不需要用框框限定自己，<br><strong>愛本來就不只一種形狀。</strong>」</p>
+            </div>
+          </div>
+          <!-- 右頁 P13 -->
+          <div class="single-panel panel-right">
+            <img src="images/scene6_right.png" alt="海豚寶寶歡呼" class="panel-img">
+            <div class="floating-text-box pos-bottom-right" data-narrate="哇！這一定是有史以來最酷的婚禮！海豚寶寶高興地在浪花裡翻跟斗。">
+              <p>「哇！這一定是有史以來最酷的婚禮！」<br>
+              海豚寶寶高興地在浪花裡翻跟斗。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 8：【P14–P15 第 7 幕】互動關卡 3：無界限造型沙龍（大跨頁遊戲）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-8" data-unit="8" data-type="game">
+        <div class="game-spread-wrap game-salon">
+          <div class="floating-text-box pos-top-left">
+            <span class="game-tag-pill">🌟 互動挑戰 3</span>
+            <p>章魚裁縫師量身打造了好多漂亮的服裝。<br><strong>「這裡沒有男裝或女裝，想怎麼穿都可以！」</strong></p>
+          </div>
+
+          <div class="salon-dressing-room">
+            <!-- 亮亮台 -->
+            <div class="dressing-pod" id="pod-liang">
+              <h3>亮亮老師</h3>
+              <div class="avatar-canvas-box" id="avatar-liang">
+                <div class="base-slug blue-slug"></div>
+                <div class="equipped-hat slot" id="equip-liang-hat"></div>
+                <div class="equipped-cloth slot" id="equip-liang-cloth"></div>
+              </div>
+              <div class="pod-label">穿搭：<span id="liang-outfit-text">自由自選</span></div>
+            </div>
+
+            <!-- 衣櫥 -->
+            <div class="wardrobe-cabinet">
+              <div class="wardrobe-tabs">
+                <button class="tab-btn active" data-tab="hats">帽飾與頭紗</button>
+                <button class="tab-btn" data-tab="clothes">禮服與西裝</button>
+              </div>
+              <div class="items-grid" id="wardrobe-items"></div>
+              <div class="wardrobe-actions">
+                <button class="btn-action-primary" id="btn-save-outfit">✨ 定裝拍照！</button>
+                <button class="btn-action-secondary" id="btn-reset-outfit">重選</button>
+              </div>
+            </div>
+
+            <!-- 閃閃台 -->
+            <div class="dressing-pod" id="pod-shan">
+              <h3>閃閃老師</h3>
+              <div class="avatar-canvas-box" id="avatar-shan">
+                <div class="base-slug pink-slug"></div>
+                <div class="equipped-hat slot" id="equip-shan-hat"></div>
+                <div class="equipped-cloth slot" id="equip-shan-cloth"></div>
+              </div>
+              <div class="pod-label">穿搭：<span id="shan-outfit-text">自由自選</span></div>
+            </div>
+          </div>
+
+          <!-- 拍立得彈窗 -->
+          <div class="card-modal hidden" id="salon-popup">
+            <div class="modal-card-box polaroid-box">
+              <div class="polaroid-img" id="polaroid-content"></div>
+              <p class="polaroid-caption">「自信穿上自己喜歡的樣子，最美麗！」</p>
+              <button class="btn-sub-close" id="btn-close-salon-popup">前往下一章 ➔</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 9：【P16–P17 第 8 幕】沒有手的戒指 vs. 愛之環（單頁左右對開）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-9" data-unit="9" data-type="dual-single">
+        <div class="dual-panels-wrap">
+          <!-- 左頁 P16 -->
+          <div class="single-panel panel-left">
+            <img src="images/scene8_left.png" alt="老水母提問" class="panel-img">
+            <div class="floating-text-box pos-bottom-left" data-narrate="你們海蛞蝓沒有手，老水母好奇地問：交換戒指的時候要戴在哪裡呢？">
+              <p>「你們海蛞蝓沒有手，」老水母好奇地問：<br>
+              「交換戒指的時候要戴在哪裡呢？」</p>
+            </div>
+          </div>
+          <!-- 右頁 P17 -->
+          <div class="single-panel panel-right">
+            <img src="images/scene8_right.png" alt="閃閃愛之環特寫" class="panel-img">
+            <div class="floating-text-box pos-bottom-right" data-narrate="我們套在背上的滑行痕上，閃閃說：那是陪伴我們一起前進的愛之環。">
+              <p>「我們套在背上的滑行痕上，」閃閃說：<br>
+              「那是陪伴我們一起前進的<strong>『愛之環』</strong>。」</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 10：【P18–P19 第 9 幕】互動關卡 4：波光交響（大跨頁遊戲）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-10" data-unit="10" data-type="game">
+        <div class="game-spread-wrap game-stage-deco">
+          <div class="floating-text-box pos-top-left">
+            <span class="game-tag-pill">🌟 互動挑戰 4</span>
+            <p>婚禮就要開始了！居民們齊心協力，<br>一起布置最美麗的海洋舞台。</p>
+          </div>
+          <div class="floating-text-box pos-top-right">
+            <div class="meter-banner">
+              <span>共融能量：</span>
+              <div class="meter-bar"><div id="harmony-fill" class="meter-fill" style="width: 20%;"></div></div>
+              <span id="harmony-percentage">20%</span>
+            </div>
+            <p class="sub-hint">點擊水母、敲響貝殼、鋪設珊瑚花毯！</p>
+          </div>
+
+          <div class="wedding-stage-interactive" id="deco-stage">
+            <div class="deco-interactive-node light-node" id="node-lights" title="點擊切換水母柔光">
+              <span>🪼 水母吊燈</span>
+            </div>
+            <div class="deco-interactive-node music-node" id="node-music" title="點擊敲響貝殼風鈴">
+              <span>🐚 貝殼風鈴</span>
+            </div>
+            <div class="deco-interactive-node carpet-node" id="node-carpet" title="點擊鋪設發光珊瑚沙">
+              <span>🪸 珊瑚紅毯</span>
+            </div>
+          </div>
+
+          <div class="stage-celebration-toast hidden" id="toast-wedding-ready">
+            🎉 波光共融能量達 100%！號角響起，婚禮正式開始！
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 11：【P20–P21 第 10 幕】互動關卡 5：愛之環的承諾（大跨頁遊戲）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-11" data-unit="11" data-type="game">
+        <div class="game-spread-wrap game-weave">
+          <div class="floating-text-box pos-top-left">
+            <span class="game-tag-pill">🌟 互動挑戰 5</span>
+            <p>優美的音樂響起，亮亮與閃閃來到舞台中央。<br><strong>「請為彼此許下一生的承諾。」</strong></p>
+          </div>
+          <div class="floating-text-box pos-top-right">
+            <p class="sub-hint">用滑鼠或手指在發光的星點間連線，編織愛之環！</p>
+            <div id="weave-status" class="weave-badge">請滑動連接第 1 個星點（傾聽）...</div>
+          </div>
+
+          <div class="weave-board-wrap">
+            <canvas id="weave-canvas" width="800" height="380"></canvas>
+            <div class="vows-overlay" id="vows-container">
+              <div class="vow-tag" id="vow-1">🌿【傾聽】「不論海流多急，我都願意靜靜聽你說。」</div>
+              <div class="vow-tag" id="vow-2">⭐【尊重】「我愛你原本的樣子，不用為任何人改變。」</div>
+              <div class="vow-tag" id="vow-3">💖【相伴】「在每一段海底道路上，我們並肩同行。」</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 12：【P22–P23 第 11 幕】彩虹泡泡婚禮盛況（大跨頁）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-12" data-unit="12" data-type="spread">
+        <div class="screen-fullbleed" id="fireworks-canvas-zone">
+          <img src="images/spread11.png" alt="彩虹泡泡婚禮盛況" class="fullbleed-bg-img">
+          <div class="floating-text-box pos-top-left" data-narrate="砰！珊瑚間噴出絢麗的彩虹泡泡煙火。小海兔波波好奇地問：什麼是真正的愛呢？">
+            <p>砰！珊瑚間噴出絢麗的彩虹泡泡煙火。<br>
+            小海兔波波好奇地問：<strong>「什麼是真正的愛呢？」</strong></p>
+          </div>
+          <div class="floating-text-box pos-bottom-right" data-narrate="就像海浪，每道波浪的形狀都不同，閃閃說：愛是兩個人一起創作出來的彩虹。">
+            <p>「就像海浪，每道波浪的形狀都不同，」閃閃說：<br>
+            <strong>「愛是兩個人一起創作出來的彩虹。」</strong></p>
+          </div>
+          <div class="fireworks-tap-tip">點擊畫面任意處，施放泡泡煙火！🫧</div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 13：【P24–P25 第 12 幕】小海兔星空手帳與證書（大跨頁遊戲）
+           ========================================================= -->
+      <section class="unit-screen" id="unit-13" data-unit="13" data-type="game">
+        <div class="game-spread-wrap game-reflection">
+          <div class="reflection-book-grid">
+            <!-- 左頁：手帳心得與同理測驗 -->
+            <div class="reflection-page page-left">
+              <span class="game-tag-pill">小海兔波波的手帳</span>
+              <blockquote class="bobo-quote">
+                「真正的美麗，是不用活在別人的框架裡；真正的愛，是讓彼此都能發出最自在、最獨特的光。」
+              </blockquote>
+              <div class="scenario-quiz-box">
+                <h4>日常情境小思考：</h4>
+                <p class="quiz-q">體育課時，如果有同學笑別人『男生玩洋娃娃好奇怪』，身為波光城的守護者，你會怎麼做？</p>
+                <div class="quiz-options">
+                  <button class="btn-opt" data-correct="false">跟著大家一起笑</button>
+                  <button class="btn-opt" data-correct="true">溫和告訴他：「每個人都可以喜歡自己喜歡的玩具喔！」</button>
+                  <button class="btn-opt" data-correct="false">默默走開不管</button>
+                </div>
+                <div class="quiz-feedback hidden" id="quiz-msg"></div>
+              </div>
+            </div>
+
+            <!-- 右頁：挑選印章與榮譽證書 -->
+            <div class="reflection-page page-right">
+              <h3>挑選 3 枚守護印章（已選 <span id="stamp-selected-count">0</span> / 3）：</h3>
+              <div class="stamp-selection-grid">
+                <button class="stamp-btn" data-stamp="勇敢做自己">🌟 勇敢做自己</button>
+                <button class="stamp-btn" data-stamp="多樣的愛">🌊 多樣的愛</button>
+                <button class="stamp-btn" data-stamp="溫柔傾聽">👂 溫柔傾聽</button>
+                <button class="stamp-btn" data-stamp="打破標籤">🚫 打破標籤</button>
+                <button class="stamp-btn" data-stamp="互相扶持">🤝 互相扶持</button>
+                <button class="stamp-btn" data-stamp="平等尊重">⚖️ 平等尊重</button>
+              </div>
+
+              <div class="cert-input-section">
+                <label for="student-code">請輸入班級座號（例如 50101，守護個資）：</label>
+                <input type="text" id="student-code" placeholder="如：50101" maxlength="10">
+                <button class="btn-generate-cert" id="btn-create-cert">🎓 生成榮譽證書</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 證書下載預覽彈窗 -->
+          <div class="card-modal hidden" id="cert-modal">
+            <div class="modal-card-box cert-box">
+              <canvas id="cert-canvas" width="800" height="560"></canvas>
+              <div class="cert-actions">
+                <button class="btn-action-primary" id="btn-download-cert">📥 下載榮譽證書（PNG）</button>
+                <button class="btn-action-secondary" id="btn-close-cert">關閉</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           單元 14：【P26 封底】單頁滿版 16:9
+           ========================================================= -->
+      <section class="unit-screen" id="unit-14" data-unit="14" data-type="single">
+        <div class="screen-fullbleed back-cover-screen">
+          <img src="images/back_cover.png" alt="海蛞蝓愛海蛞蝓 封底" class="fullbleed-bg-img">
+          <div class="back-cover-quote-wrap floating-text-box" data-narrate="願你也能成為一片溫柔的海，讓身邊每一個獨特的朋友，都能自在游動。">
+            <blockquote class="back-quote-text">
+              「願你也能成為一片溫柔的海，<br>
+              讓身邊每一個獨特的朋友，都能自在游動。」
+            </blockquote>
+            <div class="back-colophon">
+              <span class="colophon-title">《海蛞蝓愛海蛞蝓：波光城最閃亮的婚禮》</span>
+              <span class="colophon-sub">國小性別平等・多元理解・生命教育線上互動繪本</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 底部控制導覽列 -->
+    <footer class="book-footer">
+      <button id="btn-prev-page" class="nav-btn" disabled>
+        <span class="arrow">◀</span> 上一頁
+      </button>
+
+      <div class="footer-center-menu">
+        <select id="toc-select" class="toc-dropdown" title="快速跳頁目錄">
+          <option value="1">P1 封面</option>
+          <option value="2">P2–P3 第 1 幕：波光城的祕密（大跨頁）</option>
+          <option value="3">P4–P5 第 2 幕：心靈相通的求婚（單頁對開）</option>
+          <option value="4">P6–P7 第 3 幕：【關卡 1】深海聚光燈</option>
+          <option value="5">P8–P9 第 4 幕：籌備現場 vs. 螃蟹阿姨（單頁對開）</option>
+          <option value="6">P10–P11 第 5 幕：【關卡 2】思維泡泡戳戳樂</option>
+          <option value="7">P12–P13 第 6 幕：愛的形狀與歡呼（單頁對開）</option>
+          <option value="8">P14–P15 第 7 幕：【關卡 3】無界限造型沙龍</option>
+          <option value="9">P16–P17 第 8 幕：愛之環的承諾（單頁對開）</option>
+          <option value="10">P18–P19 第 9 幕：【關卡 4】波光交響布置</option>
+          <option value="11">P20–P21 第 10 幕：【關卡 5】愛之環誓約連線</option>
+          <option value="12">P22–P23 第 11 幕：彩虹泡泡婚禮盛況（大跨頁）</option>
+          <option value="13">P24–P25 第 12 幕：【關卡 6】星空手帳與證書</option>
+          <option value="14">P26 封底</option>
+        </select>
+      </div>
+
+      <button id="btn-next-page" class="nav-btn">
+        下一頁 <span class="arrow">▶</span>
+      </button>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
