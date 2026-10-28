@@ -45,6 +45,8 @@
 
     <!-- 繪本雙頁/跨頁展示舞台 -->
     <main class="book-stage" id="book-stage">
+      <!-- 全域深海魔法粒子特效畫布 -->
+      <canvas id="fx-canvas" class="fx-canvas"></canvas>
 
       <!-- =========================================================
            單元 1：【P1 封面】單頁滿版
@@ -72,6 +74,12 @@
           </div>
           <div class="floating-text-box pos-bottom-right" data-narrate="他們頭頂上的兔耳觸角輕輕碰在一起，那是專屬於他們的悄悄話。">
             <p>他們頭頂上的兔耳觸角輕輕碰在一起，<br>那是專屬於他們的悄悄話。</p>
+          </div>
+
+          <!-- 隱藏彩蛋 1：遠方童話沙堡點燈 -->
+          <div class="easter-egg-hotspot egg-castle" data-egg="castle" title="探索波光城城堡祕密！">
+            <span class="egg-icon">🏰</span>
+            <span class="egg-sparkle">✨</span>
           </div>
         </div>
       </section>
@@ -104,46 +112,267 @@
       </section>
 
       <!-- =========================================================
-           單元 4：【P6–P7 第 3 幕】互動關卡 1：深海聚光燈（大跨頁遊戲）
+           單元 4：【P6–P7 第 3 幕】互動關卡 1：波光城的神祕邀請函
            ========================================================= -->
       <section class="unit-screen" id="unit-4" data-unit="4" data-type="game">
-        <div class="game-spread-wrap game-spotlight">
-          <div class="floating-text-box pos-top-left">
-            <span class="game-tag-pill">🌟 互動挑戰 1</span>
-            <p>婚禮的消息傳開了！<br>快拿起<strong>深海探照燈</strong>，通知波光城的好夥伴！</p>
-          </div>
-          <div class="floating-text-box pos-top-right">
-            <div class="counter-badge">已尋獲夥伴：<span id="spotlight-found-count">0</span> / 4</div>
-            <p class="sub-hint">找到海馬、螃蟹、小丑魚與老水母，解鎖大自然的奧祕！</p>
+        <div class="game-spread-wrap game-invitation">
+          <!-- 海底社區地圖背景與主舞台 -->
+          <div class="invitation-map-stage" id="invitation-map-stage">
+            <img src="images/level1/bg_boguang_map.png" alt="波光城地圖" class="invitation-bg-map">
+
+            <!-- 遊戲導入介紹小視窗（類似第二關卡片設計） -->
+            <div class="intro-dialog-card" id="invitation-intro-card">
+              <div class="intro-card-inner invitation-intro-inner">
+                <div class="intro-icon-bubble">💌</div>
+                <span class="game-tag-pill">🌟 互動挑戰 1</span>
+                <h3 class="intro-invitation-title">波光城的神祕邀請函</h3>
+                <div class="intro-invitation-text">
+                  <p>亮亮與閃閃決定結婚了！牠們準備把喜訊告訴波光城的好朋友。</p>
+                  <p class="intro-highlight">「糟了！邀請函上的收件人名字不小心模糊了！」</p>
+                  <p class="intro-invitation-sub">讀一讀信上的生物線索，幫忙把婚禮邀請送到四位居民手上吧！</p>
+                </div>
+                <button class="btn-action-primary btn-start-invitation-game" id="btn-start-invitation-challenge">
+                  <span>開始送信挑戰 ➔</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 頂部資訊列：進度、印章蒐集、說明按鈕 -->
+            <div class="invitation-top-bar">
+              <div class="top-title-group">
+                <span class="game-tag-pill">💌 互動挑戰 1</span>
+                <h2 class="invitation-title">波光城的神祕邀請函</h2>
+                <span class="invitation-sub-desc">邀請函上的名字不見了！讀一讀線索，找出喜帖收件人</span>
+              </div>
+              <div class="top-status-group">
+                <div class="progress-pill">
+                  <span>送信進度：</span>
+                  <strong id="invitation-progress-text">已送達 0／4</strong>
+                </div>
+                <!-- 4 枚居民印章欄位 -->
+                <div class="stamp-collection-bar">
+                  <div class="stamp-slot" id="stamp-slot-crab" title="螃蟹印章">
+                    <span class="stamp-icon">🦀</span>
+                    <span class="stamp-check hidden" id="stamp-check-crab">✓</span>
+                  </div>
+                  <div class="stamp-slot" id="stamp-slot-octopus" title="章魚印章">
+                    <span class="stamp-icon">🐙</span>
+                    <span class="stamp-check hidden" id="stamp-check-octopus">✓</span>
+                  </div>
+                  <div class="stamp-slot" id="stamp-slot-jellyfish" title="水母印章">
+                    <span class="stamp-icon">🪼</span>
+                    <span class="stamp-check hidden" id="stamp-check-jellyfish">✓</span>
+                  </div>
+                  <div class="stamp-slot" id="stamp-slot-dolphin" title="海豚印章">
+                    <span class="stamp-icon">🐬</span>
+                    <span class="stamp-check hidden" id="stamp-check-dolphin">✓</span>
+                  </div>
+                </div>
+                <button class="btn-tool-pill" id="btn-show-invitation-help" title="查看遊戲說明">
+                  ❓ 遊戲說明
+                </button>
+              </div>
+            </div>
+
+            <!-- 四位海洋居民目標區域 (Dropzones) 分布在地圖各區 -->
+            <div class="resident-dropzones-grid">
+              <!-- 螃蟹阿姨 -->
+              <div class="resident-zone" id="zone-crab" data-resident="crab" tabindex="0" role="button" aria-label="螃蟹阿姨的家">
+                <div class="resident-img-wrap">
+                  <img src="images/level1/house_crab.png" alt="螃蟹阿姨的家" class="resident-house-img">
+                  <div class="resident-status-badge hidden" id="badge-crab">已送達 💌</div>
+                </div>
+                <div class="resident-label-box">
+                  <span class="resident-name">螃蟹阿姨</span>
+                  <span class="delivery-status-text" id="status-text-crab">等待投遞</span>
+                </div>
+              </div>
+
+              <!-- 章魚裁縫師 -->
+              <div class="resident-zone" id="zone-octopus" data-resident="octopus" tabindex="0" role="button" aria-label="章魚裁縫師的家">
+                <div class="resident-img-wrap">
+                  <img src="images/level1/house_octopus.png" alt="章魚裁縫師的家" class="resident-house-img">
+                  <div class="resident-status-badge hidden" id="badge-octopus">已送達 💌</div>
+                </div>
+                <div class="resident-label-box">
+                  <span class="resident-name">章魚裁縫師</span>
+                  <span class="delivery-status-text" id="status-text-octopus">等待投遞</span>
+                </div>
+              </div>
+
+              <!-- 老水母 -->
+              <div class="resident-zone" id="zone-jellyfish" data-resident="jellyfish" tabindex="0" role="button" aria-label="老水母的家">
+                <div class="resident-img-wrap">
+                  <img src="images/level1/house_jellyfish.png" alt="老水母的家" class="resident-house-img">
+                  <div class="resident-status-badge hidden" id="badge-jellyfish">已送達 💌</div>
+                </div>
+                <div class="resident-label-box">
+                  <span class="resident-name">老水母</span>
+                  <span class="delivery-status-text" id="status-text-jellyfish">等待投遞</span>
+                </div>
+              </div>
+
+              <!-- 海豚寶寶 -->
+              <div class="resident-zone" id="zone-dolphin" data-resident="dolphin" tabindex="0" role="button" aria-label="海豚寶寶的家">
+                <div class="resident-img-wrap">
+                  <img src="images/level1/house_dolphin.png" alt="海豚寶寶的家" class="resident-house-img">
+                  <div class="resident-status-badge hidden" id="badge-dolphin">已送達 💌</div>
+                </div>
+                <div class="resident-label-box">
+                  <span class="resident-name">海豚寶寶</span>
+                  <span class="delivery-status-text" id="status-text-dolphin">等待投遞</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 下方：邀請函操作與單條提示工作區 -->
+            <div class="invitation-interactive-dock">
+              <!-- 四封邀請函選擇籤（只標示編號，不透露收件人） -->
+              <div class="envelope-selector-row">
+                <div class="envelope-card-btn active" id="env-btn-1" data-id="1">
+                  <span class="env-number">邀請函 01</span>
+                  <span class="env-state-tag" id="env-state-1">進行中</span>
+                </div>
+                <div class="envelope-card-btn" id="env-btn-2" data-id="2">
+                  <span class="env-number">邀請函 02</span>
+                  <span class="env-state-tag" id="env-state-2">未送達</span>
+                </div>
+                <div class="envelope-card-btn" id="env-btn-3" data-id="3">
+                  <span class="env-number">邀請函 03</span>
+                  <span class="env-state-tag" id="env-state-3">未送達</span>
+                </div>
+                <div class="envelope-card-btn" id="env-btn-4" data-id="4">
+                  <span class="env-number">邀請函 04</span>
+                  <span class="env-state-tag" id="env-state-4">未送達</span>
+                </div>
+              </div>
+
+              <!-- 目前選中信件的主舞台（包含可拖曳信封 ＋ 單條提示區塊） -->
+              <div class="active-letter-workarea" id="active-letter-workarea">
+                <!-- 可拖曳／可點選投遞的邀請函實體 -->
+                <div class="draggable-envelope-item" id="draggable-envelope" draggable="true" title="按住拖曳給居民，或直接點選上方居民投遞">
+                  <img src="images/level1/invitation_card.png" alt="婚禮邀請函" class="envelope-art-img">
+                  <div class="envelope-glow-label">
+                    <span class="env-code" id="active-env-code">邀請函 01</span>
+                    <span class="drag-hint-pill">可拖曳或點選投遞</span>
+                  </div>
+                </div>
+
+                <!-- 單條提示卡片區（始終只保留目前這一條提示，不累積呈現） -->
+                <div class="single-hint-panel" id="single-hint-panel">
+                  <div class="hint-header-row">
+                    <span class="hint-tier-badge" id="hint-tier-badge">提示 1／3</span>
+                    <button class="btn-more-hint" id="btn-request-more-hint">再給我一個提示 💡</button>
+                    <button class="btn-switch-other-letter hidden" id="btn-switch-other-letter">先挑戰其他邀請函 ↩</button>
+                  </div>
+                  <!-- 單條提示文字容器 -->
+                  <div class="hint-content-box" id="hint-content-box">
+                    <p class="current-hint-text" id="current-hint-text">
+                      載入提示中...
+                    </p>
+                  </div>
+                  <!-- 即時回饋文字（答錯或提示推進時溫和提示） -->
+                  <div class="hint-feedback-msg hidden" id="hint-feedback-msg">
+                    <span class="feedback-icon" id="invitation-feedback-icon">💡</span>
+                    <span class="feedback-text" id="invitation-feedback-text"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 送達動畫過渡層 -->
+            <div class="delivery-anim-overlay hidden" id="delivery-anim-overlay">
+              <div class="flying-letter" id="flying-letter">
+                <img src="images/level1/invitation_card.png" alt="飛行邀請函">
+              </div>
+            </div>
           </div>
 
-          <div class="spotlight-stage" id="spotlight-stage">
-            <canvas id="spotlight-canvas"></canvas>
-            <!-- 隱藏在暗處的 4 位夥伴 -->
-            <div class="hidden-creature" id="creature-seahorse" data-name="海馬郵差" data-fact="海馬爸爸有神奇的育兒袋，是由爸爸負責懷孕並生下海馬寶寶的喔！" style="top: 25%; left: 18%;">
-              <span class="creature-emoji">🎠</span>
-              <span class="creature-label">海馬郵差</span>
-            </div>
-            <div class="hidden-creature" id="creature-crab" data-name="螃蟹阿姨" data-fact="螃蟹阿姨熱心又俐落，正急著幫大家把貝殼座椅排得整整齊齊！" style="top: 72%; left: 78%;">
-              <span class="creature-emoji">🦀</span>
-              <span class="creature-label">螃蟹阿姨</span>
-            </div>
-            <div class="hidden-creature" id="creature-clownfish" data-name="小丑魚巡邏隊" data-fact="小丑魚是天生的性別轉換高手，最能幹的魚會順應需要守護大家！" style="top: 36%; left: 72%;">
-              <span class="creature-emoji">🐠</span>
-              <span class="creature-label">小丑魚群</span>
-            </div>
-            <div class="hidden-creature" id="creature-jellyfish" data-name="老水母長者" data-fact="老水母在大海裡游了幾百年，擁有最溫和包容的智慧心胸！" style="top: 68%; left: 26%;">
-              <span class="creature-emoji">🪼</span>
-              <span class="creature-label">老水母</span>
+          <!-- 彈窗 1：遊戲說明彈窗 -->
+          <div class="card-modal hidden" id="invitation-help-modal">
+            <div class="modal-card-box modal-help-box">
+              <div class="help-header">
+                <span class="help-icon">💌</span>
+                <h3>如何玩「波光城的神祕邀請函」？</h3>
+              </div>
+              <div class="help-content-list">
+                <p>1. <strong>選擇邀請函</strong>：點擊下方的邀請函（01～04），信封會自動打開。</p>
+                <p>2. <strong>閱讀生物線索</strong>：仔細讀一讀目前的動物知識線索，想想牠是誰！</p>
+                <p>3. <strong>投遞邀請函</strong>：可以直接<strong>拖曳邀請函</strong>給居民，也可以點擊上方<strong>居民住處</strong>直接送達！</p>
+                <p>4. <strong>線索不夠時</strong>：點擊「再給我一個提示」，獲得更明確的特徵（最多 3 條）。</p>
+                <p>5. <strong>答對領取印章</strong>：送達正確居民即可解鎖專屬海洋知識卡，並獲得認證印章！</p>
+              </div>
+              <button class="btn-action-primary" id="btn-close-invitation-help">我知道了，開始解謎！</button>
             </div>
           </div>
 
-          <!-- 科普卡彈窗 -->
-          <div class="card-modal hidden" id="nature-card-modal">
-            <div class="modal-card-box">
-              <h3 id="modal-creature-title">🌟 生物小百科</h3>
-              <p id="modal-creature-fact">科普內容</p>
-              <button class="btn-sub-close" id="btn-close-creature-modal">收下知識卡 ✨</button>
+          <!-- 彈窗 2：海洋知識卡彈窗（解鎖對應特寫圖片與知識） -->
+          <div class="card-modal hidden" id="invitation-knowledge-modal">
+            <div class="modal-card-box knowledge-card-box">
+              <div class="knowledge-resident-img-wrap">
+                <img src="" alt="居民特寫" class="knowledge-cheer-img" id="knowledge-cheer-img">
+                <div class="knowledge-stamp-pill" id="knowledge-stamp-pill">已獲得居民印章 ✨</div>
+              </div>
+              <h3 class="knowledge-title" id="knowledge-title">生物知識標題</h3>
+              <div class="knowledge-body" id="knowledge-body">生物知識科普內容</div>
+              <button class="btn-action-primary" id="btn-close-knowledge-card">收下印章，繼續送信 ➔</button>
+            </div>
+          </div>
+
+          <!-- 彈窗 3：關卡完成慶祝彈窗 -->
+          <div class="card-modal hidden" id="invitation-victory-modal">
+            <div class="modal-card-box invitation-victory-card">
+              <div class="victory-header-badge">🎉 全部送達 🎉</div>
+              <h3 class="victory-title">婚禮邀請，全部送達！</h3>
+              <p class="victory-desc">你找到了四位神祕收件人，也認識了牠們的海洋小祕密。一起繼續亮亮與閃閃的故事吧！</p>
+              
+              <!-- 四位居民與印章成果展台 -->
+              <div class="victory-stamps-summary-grid">
+                <div class="summary-resident-item">
+                  <img src="images/level1/house_crab.png" alt="螃蟹阿姨">
+                  <span>螃蟹阿姨 🦀</span>
+                  <div class="stamp-badge">已認證 ✓</div>
+                </div>
+                <div class="summary-resident-item">
+                  <img src="images/level1/house_octopus.png" alt="章魚裁縫師">
+                  <span>章魚裁縫師 🐙</span>
+                  <div class="stamp-badge">已認證 ✓</div>
+                </div>
+                <div class="summary-resident-item">
+                  <img src="images/level1/house_jellyfish.png" alt="老水母">
+                  <span>老水母 🪼</span>
+                  <div class="stamp-badge">已認證 ✓</div>
+                </div>
+                <div class="summary-resident-item">
+                  <img src="images/level1/house_dolphin.png" alt="海豚寶寶">
+                  <span>海豚寶寶 🐬</span>
+                  <div class="stamp-badge">已認證 ✓</div>
+                </div>
+              </div>
+
+              <!-- 完成操作按鈕組 -->
+              <div class="victory-actions-group">
+                <button class="btn-action-secondary" id="btn-review-knowledge-cards">📖 查看海洋知識卡</button>
+                <button class="btn-action-secondary" id="btn-replay-invitation-game">↺ 再玩一次</button>
+                <button class="btn-action-primary" id="btn-invitation-continue-story">繼續故事 ➔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 彈窗 4：再次查看知識卡檢閱總覽（支援由完成畫面重新閱讀四張知識卡） -->
+          <div class="card-modal hidden" id="knowledge-review-modal">
+            <div class="modal-card-box review-all-cards-box">
+              <h3>📖 四位海洋朋友的知識卡回顧</h3>
+              <div class="review-cards-tabs">
+                <button class="review-tab-btn active" data-target="crab">螃蟹阿姨</button>
+                <button class="review-tab-btn" data-target="octopus">章魚裁縫師</button>
+                <button class="review-tab-btn" data-target="jellyfish">老水母</button>
+                <button class="review-tab-btn" data-target="dolphin">海豚寶寶</button>
+              </div>
+              <div class="review-card-detail" id="review-card-detail">
+                <!-- 動態注入該角色知識 -->
+              </div>
+              <button class="btn-action-primary" id="btn-close-review-modal">返回成果畫面</button>
             </div>
           </div>
         </div>
@@ -160,6 +389,11 @@
             <div class="floating-text-box pos-top-left" data-narrate="夥伴們全都趕來了！大家忙著布置，整個波光城像在開盛大的派對。">
               <p>夥伴們全都趕來了！<br>大家忙著布置，<br>整個波光城像在開盛大的派對。</p>
             </div>
+            <!-- 隱藏彩蛋 2：海馬郵差翻跟斗 -->
+            <div class="easter-egg-hotspot egg-seahorse" data-egg="seahorse" title="逗逗海馬郵差！">
+              <span class="egg-icon">🎠</span>
+              <span class="egg-sparkle">✨</span>
+            </div>
           </div>
           <!-- 右頁 P9 -->
           <div class="single-panel panel-right">
@@ -168,53 +402,131 @@
               <p>突然，螃蟹阿姨停下了大螯，驚訝地問：<br>
               <strong>「等等！海蛞蝓要結婚……<br>那誰當新郎？誰當新娘呀？」</strong></p>
             </div>
+            <!-- 隱藏彩蛋 3：發光珍珠座椅 -->
+            <div class="easter-egg-hotspot egg-chair" data-egg="chair" title="摸摸美麗的珍珠座椅！">
+              <span class="egg-icon">🦪</span>
+              <span class="egg-sparkle">✨</span>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- =========================================================
-           單元 6：【P10–P11 第 5 幕】互動關卡 2：思維泡泡戳戳樂（大跨頁遊戲）
+           單元 6：【P10–P11 第 5 幕】互動關卡 2：打破刻板印象泡泡（大跨頁遊戲）
            ========================================================= -->
       <section class="unit-screen" id="unit-6" data-unit="6" data-type="game">
-        <div class="game-spread-wrap game-bubbles">
-          <div class="floating-text-box pos-top-left">
+        <div class="game-spread-wrap game-stereotype-bubbles" id="game-bubbles-container">
+          <!-- 海底動態灰暗遮罩（隨打破泡泡逐步恢復明亮色彩） -->
+          <div class="bubbles-ocean-dim-overlay" id="bubbles-dim-overlay"></div>
+
+          <!-- 頂部浮動狀態與進度列 -->
+          <div class="floating-text-box pos-top-left bubbles-status-header">
             <span class="game-tag-pill">🌟 互動挑戰 2</span>
-            <p>大家你看我、我看你，心裡滿是問號。<br>拖曳發光的<strong>同理珍珠</strong>，解開迷思！</p>
-          </div>
-
-          <div class="bubbles-arena" id="bubbles-arena">
-            <div class="bubble-target" data-accept="color">
-              <div class="bubble-content">
-                <span class="bubble-q">「藍色的亮亮體型大一點，一定是新郎吧？」</span>
-              </div>
-            </div>
-            <div class="bubble-target" data-accept="trait">
-              <div class="bubble-content">
-                <span class="bubble-q">「粉紅色的閃閃個性溫柔，一定是照顧家裡的新娘吧？」</span>
-              </div>
-            </div>
-            <div class="bubble-target" data-accept="binary">
-              <div class="bubble-content">
-                <span class="bubble-q">「結婚不是本來就一定要分出一個男生和女生嗎？」</span>
-              </div>
+            <div class="bubbles-progress-wrap">
+              <span class="progress-title">打破刻板印象泡泡：</span>
+              <span class="progress-counter" id="bubble-burst-counter">已打破 0／3 顆刻板印象泡泡</span>
             </div>
           </div>
 
-          <div class="pearls-dock">
-            <div class="draggable-pearl" draggable="true" data-type="color">
-              <span class="pearl-icon">🔮</span>
-              <span class="pearl-text">色彩無界限</span>
-            </div>
-            <div class="draggable-pearl" draggable="true" data-type="trait">
-              <span class="pearl-icon">🌸</span>
-              <span class="pearl-text">特質自由</span>
-            </div>
-            <div class="draggable-pearl" draggable="true" data-type="binary">
-              <span class="pearl-icon">🌊</span>
-              <span class="pearl-text">多元的愛</span>
+          <!-- 階段 1：遊戲導入引導卡片 -->
+          <div class="intro-dialog-card" id="bubbles-intro-card">
+            <div class="intro-card-inner">
+              <div class="intro-icon-bubble">🫧</div>
+              <h3>波光城的小危機！</h3>
+              <p>咦？波光城怎麼突然出現了奇怪的灰色泡泡？</p>
+              <p>原來，這些泡泡裡藏著大家習以為常的想法……</p>
+              <p class="intro-highlight">一起打破刻板印象，讓波光城恢復光彩吧！</p>
+              <button class="btn-start-bubble-game" id="btn-start-bubble-challenge">
+                <span>開始挑戰 ✨</span>
+              </button>
             </div>
           </div>
-          <div class="feedback-banner" id="bubble-feedback">拖曳珍珠至上方泡泡，開啟對話！</div>
+
+          <!-- 階段 2：三顆大小略有差異的灰色泡泡漂浮舞台 -->
+          <div class="stereotype-bubbles-arena" id="stereotype-bubbles-arena">
+            <!-- 泡泡 1：顏色真的有性別嗎？ -->
+            <div class="gray-stereotype-bubble bubble-item-1" data-id="1" id="bubble-item-1" role="button" tabindex="0" title="點擊挑戰：顏色真的有性別嗎？">
+              <div class="bubble-inner-shimmer"></div>
+              <div class="bubble-badge-icon">🐬</div>
+              <div class="bubble-title-text">顏色與性別？</div>
+              <div class="bubble-check-badge hidden" id="bubble-check-1">✓</div>
+            </div>
+
+            <!-- 泡泡 2：個性一定要符合性別嗎？ -->
+            <div class="gray-stereotype-bubble bubble-item-2" data-id="2" id="bubble-item-2" role="button" tabindex="0" title="點擊挑戰：個性一定要符合性別嗎？">
+              <div class="bubble-inner-shimmer"></div>
+              <div class="bubble-badge-icon">🎠</div>
+              <div class="bubble-title-text">個性與性別？</div>
+              <div class="bubble-check-badge hidden" id="bubble-check-2">✓</div>
+            </div>
+
+            <!-- 泡泡 3：婚禮一定要有新郎與新娘嗎？ -->
+            <div class="gray-stereotype-bubble bubble-item-3" data-id="3" id="bubble-item-3" role="button" tabindex="0" title="點擊挑戰：婚禮一定要有新郎與新娘嗎？">
+              <div class="bubble-inner-shimmer"></div>
+              <div class="bubble-badge-icon">🦀</div>
+              <div class="bubble-title-text">新郎與新娘？</div>
+              <div class="bubble-check-badge hidden" id="bubble-check-3">✓</div>
+            </div>
+          </div>
+
+          <!-- 階段 3：情境題互動卡片 Modal -->
+          <div class="card-modal hidden" id="bubble-quiz-modal">
+            <div class="modal-card-box bubble-scenario-card" id="bubble-scenario-card">
+              <!-- 題目標題與情境 -->
+              <div class="scenario-header">
+                <span class="scenario-tag" id="scenario-topic-tag">🫧 刻板印象泡泡一</span>
+                <h3 id="scenario-title">顏色真的有性別嗎？</h3>
+              </div>
+              <div class="scenario-story-box">
+                <p id="scenario-story">「海豚寶寶最喜歡粉紅色，但有朋友說：『男生就應該喜歡藍色！』你會怎麼回應？」</p>
+              </div>
+
+              <!-- 大型選項按鈕區 -->
+              <div class="scenario-options-grid" id="scenario-options-grid">
+                <!-- 動態注入 A, B, C 三個選項 -->
+              </div>
+
+              <!-- 選擇後的回饋區塊 -->
+              <div class="scenario-feedback-panel hidden" id="scenario-feedback-panel">
+                <div class="feedback-msg-wrap">
+                  <span class="feedback-icon" id="feedback-icon">🌟</span>
+                  <p class="feedback-text" id="feedback-text">太棒了！顏色沒有固定的性別，每個人都能選擇自己喜歡的顏色！</p>
+                </div>
+                <div class="feedback-actions">
+                  <button class="btn-action-primary hidden" id="btn-burst-bubble">
+                    <span>打破泡泡！ ✨</span>
+                  </button>
+                  <button class="btn-action-secondary hidden" id="btn-retry-bubble">
+                    <span>再試一次 🔄</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 關閉按鈕 -->
+              <button class="btn-close-bubble-card" id="btn-close-bubble-card" title="返回海底">✕</button>
+            </div>
+          </div>
+
+          <!-- 階段 5：完成獎勵卡片 Modal -->
+          <div class="card-modal hidden" id="bubbles-victory-modal">
+            <div class="modal-card-box bubbles-victory-card">
+              <div class="victory-avatars">
+                <span class="slug-avatar-bubble">💙</span>
+                <span class="heart-sparkle-icon">💖</span>
+                <span class="slug-avatar-bubble">💗</span>
+              </div>
+              <h3>🎉 波光城恢復明亮了！</h3>
+              <div class="victory-dialogue">
+                <p>「謝謝你讓波光城恢復美麗的色彩！」</p>
+                <p>「原來，每個人都可以有不同的喜好、個性和選擇。」</p>
+                <p class="victory-quote">「尊重每一種不同，就是讓世界更加美好的魔法！」</p>
+              </div>
+              <button class="btn-action-primary btn-continue-story" id="btn-bubbles-continue-story">
+                <span>完成挑戰，繼續故事 ➔</span>
+              </button>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -238,63 +550,164 @@
               <p>「哇！這一定是有史以來最酷的婚禮！」<br>
               海豚寶寶高興地在浪花裡翻跟斗。</p>
             </div>
+            <!-- 隱藏彩蛋 4：海豚寶寶翻跟斗 -->
+            <div class="easter-egg-hotspot egg-dolphin" data-egg="dolphin" title="讓海豚寶寶翻跟斗！">
+              <span class="egg-icon">🐬</span>
+              <span class="egg-sparkle">✨</span>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- =========================================================
-           單元 8：【P14–P15 第 7 幕】互動關卡 3：無界限造型沙龍（大跨頁遊戲）
+           單元 8：【P14–P15 第 7 幕】關卡 3：波光城婚禮造型設計師
            ========================================================= -->
       <section class="unit-screen" id="unit-8" data-unit="8" data-type="game">
         <div class="game-spread-wrap game-salon">
-          <div class="floating-text-box pos-top-left">
-            <span class="game-tag-pill">🌟 互動挑戰 3</span>
-            <p>章魚裁縫師量身打造了好多漂亮的服裝。<br><strong>「這裡沒有男裝或女裝，想怎麼穿都可以！」</strong></p>
+          <!-- 遊戲導入說明彈窗（仿照第二關設計，點擊進入後完全不遮擋主畫面） -->
+          <div class="intro-dialog-card" id="salon-intro-card">
+            <div class="intro-card-inner salon-intro-inner">
+              <div class="intro-icon-bubble">🎨</div>
+              <span class="game-tag-pill">🌟 互動挑戰 3</span>
+              <h3 class="intro-salon-title">波光城婚禮造型設計師</h3>
+              <div class="intro-salon-text">
+                <p>婚禮就快到了！章魚裁縫師準備了好多漂亮的服裝和配件。</p>
+                <p class="intro-highlight">「快來幫亮亮與閃閃設計獨一無二的婚禮造型吧！」</p>
+                <p class="intro-salon-sub">不管是禮服、西裝、頭紗還是禮帽，都可以自由搭配喔！</p>
+              </div>
+              <button class="btn-action-primary btn-start-salon-game" id="btn-start-salon-challenge">
+                <span>開始設計造型 ✨</span>
+              </button>
+            </div>
           </div>
 
+          <!-- 換裝舞台工作區（無文字覆蓋，開闊清晰） -->
           <div class="salon-dressing-room">
-            <!-- 亮亮台 -->
-            <div class="dressing-pod" id="pod-liang">
-              <h3>亮亮老師</h3>
-              <div class="avatar-canvas-box" id="avatar-liang">
-                <div class="base-slug blue-slug"></div>
-                <div class="equipped-hat slot" id="equip-liang-hat"></div>
-                <div class="equipped-cloth slot" id="equip-liang-cloth"></div>
-              </div>
-              <div class="pod-label">穿搭：<span id="liang-outfit-text">自由自選</span></div>
+            <!-- 角色選擇切換列 -->
+            <div class="character-switcher-bar">
+              <span class="switcher-label">目前裝扮對象：</span>
+              <button class="char-switch-btn active" id="btn-switch-liang" data-char="liang">
+                <span class="char-dot blue-dot"></span> 亮亮（點擊切換）
+              </button>
+              <button class="char-switch-btn" id="btn-switch-shan" data-char="shan">
+                <span class="char-dot pink-dot"></span> 閃閃（點擊切換）
+              </button>
             </div>
 
-            <!-- 衣櫥 -->
+            <!-- 主角展示雙展台 -->
+            <div class="characters-stage-row">
+              <!-- 亮亮展台 -->
+              <div class="dressing-pod active-char" id="pod-liang" data-char="liang" title="點擊切換為亮亮">
+                <div class="char-status-badge">裝扮中 ✨</div>
+                <h3 class="char-name">亮亮</h3>
+                <div class="avatar-stage-box" id="avatar-stage-liang">
+                  <!-- 角色底圖 -->
+                  <img src="images/liang_base.png" alt="亮亮" class="char-base-img" id="base-img-liang">
+                  <!-- 配件圖層（依前後順序：頭紗 -> 衣服 -> 帽子） -->
+                  <img src="" alt="頭紗" class="acc-layer layer-veil hidden" id="layer-liang-veil">
+                  <img src="" alt="服裝" class="acc-layer layer-clothing hidden" id="layer-liang-clothing">
+                  <img src="" alt="帽飾" class="acc-layer layer-hat hidden" id="layer-liang-hat">
+                </div>
+                <div class="pod-outfit-summary" id="liang-outfit-text">自由自選造型</div>
+              </div>
+
+              <!-- 閃閃展台 -->
+              <div class="dressing-pod" id="pod-shan" data-char="shan" title="點擊切換為閃閃">
+                <div class="char-status-badge hidden">裝扮中 ✨</div>
+                <h3 class="char-name">閃閃</h3>
+                <div class="avatar-stage-box" id="avatar-stage-shan">
+                  <!-- 角色底圖 -->
+                  <img src="images/shan_base.png" alt="閃閃" class="char-base-img" id="base-img-shan">
+                  <!-- 配件圖層 -->
+                  <img src="" alt="頭紗" class="acc-layer layer-veil hidden" id="layer-shan-veil">
+                  <img src="" alt="服裝" class="acc-layer layer-clothing hidden" id="layer-shan-clothing">
+                  <img src="" alt="帽飾" class="acc-layer layer-hat hidden" id="layer-shan-hat">
+                </div>
+                <div class="pod-outfit-summary" id="shan-outfit-text">自由自選造型</div>
+              </div>
+            </div>
+
+            <!-- 配件更衣櫃與選擇區 -->
             <div class="wardrobe-cabinet">
+              <!-- 四大配件分類分頁 -->
               <div class="wardrobe-tabs">
-                <button class="tab-btn active" data-tab="hats">帽飾與頭紗</button>
-                <button class="tab-btn" data-tab="clothes">禮服與西裝</button>
+                <button class="tab-btn active" data-tab="hats">👒 帽飾</button>
+                <button class="tab-btn" data-tab="veils">👰 頭紗</button>
+                <button class="tab-btn" data-tab="gowns">👗 禮服</button>
+                <button class="tab-btn" data-tab="suits">🤵 西裝</button>
               </div>
-              <div class="items-grid" id="wardrobe-items"></div>
-              <div class="wardrobe-actions">
-                <button class="btn-action-primary" id="btn-save-outfit">✨ 定裝拍照！</button>
-                <button class="btn-action-secondary" id="btn-reset-outfit">重選</button>
-              </div>
-            </div>
 
-            <!-- 閃閃台 -->
-            <div class="dressing-pod" id="pod-shan">
-              <h3>閃閃老師</h3>
-              <div class="avatar-canvas-box" id="avatar-shan">
-                <div class="base-slug pink-slug"></div>
-                <div class="equipped-hat slot" id="equip-shan-hat"></div>
-                <div class="equipped-cloth slot" id="equip-shan-cloth"></div>
+              <!-- 配件項目清單 -->
+              <div class="items-grid" id="wardrobe-items">
+                <!-- 動態注入該分類之 3 款配件 + 卸下按鈕 -->
               </div>
-              <div class="pod-label">穿搭：<span id="shan-outfit-text">自由自選</span></div>
+
+              <!-- 操作控制列 -->
+              <div class="wardrobe-actions">
+                <button class="btn-action-secondary" id="btn-clear-char-outfit">✕ 清除目前角色配件</button>
+                <button class="btn-action-secondary" id="btn-reset-all-outfits">↺ 全部重設</button>
+                <button class="btn-action-primary" id="btn-finish-outfit">✨ 完成婚禮造型！</button>
+              </div>
             </div>
           </div>
 
-          <!-- 拍立得彈窗 -->
+          <!-- 章魚裁縫師與居民即時應援團 -->
+          <div class="resident-cheer-box" id="resident-cheer-box">
+            <div class="cheer-avatar-wrap">
+              <span class="cheer-avatar" id="cheer-avatar">🐙</span>
+            </div>
+            <div class="cheer-content">
+              <div class="cheer-name" id="cheer-speaker">章魚裁縫師</div>
+              <p class="cheer-speech" id="cheer-text">「每一種搭配都閃閃發光！挑選自己最心動的模樣，就是最棒的婚禮造型！」</p>
+            </div>
+          </div>
+
+          <!-- 成果展示畫面 Modal -->
           <div class="card-modal hidden" id="salon-popup">
-            <div class="modal-card-box polaroid-box">
-              <div class="polaroid-img" id="polaroid-content"></div>
-              <p class="polaroid-caption">「自信穿上自己喜歡的樣子，最美麗！」</p>
-              <button class="btn-sub-close" id="btn-close-salon-popup">前往下一章 ➔</button>
+            <div class="modal-card-box salon-victory-box">
+              <div class="victory-header">
+                <span class="victory-sparkle-pill">✨ 造型成果發表 ✨</span>
+                <h3 class="victory-title">亮亮與閃閃的夢幻婚禮造型</h3>
+                <p class="victory-motto">「每個人都可以自由選擇自己喜歡的模樣！」</p>
+              </div>
+
+              <!-- 雙角色盛裝展示並列畫布（供拍照與檢視） -->
+              <div class="victory-duo-stage" id="victory-duo-stage">
+                <div class="victory-char-pod" id="victory-pod-liang">
+                  <div class="avatar-stage-box" id="victory-stage-liang">
+                    <img src="images/liang_base.png" alt="亮亮" class="char-base-img">
+                    <img src="" class="acc-layer layer-veil hidden" id="v-layer-liang-veil">
+                    <img src="" class="acc-layer layer-clothing hidden" id="v-layer-liang-clothing">
+                    <img src="" class="acc-layer layer-hat hidden" id="v-layer-liang-hat">
+                  </div>
+                  <div class="victory-char-tag">亮亮</div>
+                </div>
+
+                <div class="victory-heart-symbol">💖</div>
+
+                <div class="victory-char-pod" id="victory-pod-shan">
+                  <div class="avatar-stage-box" id="victory-stage-shan">
+                    <img src="images/shan_base.png" alt="閃閃" class="char-base-img">
+                    <img src="" class="acc-layer layer-veil hidden" id="v-layer-shan-veil">
+                    <img src="" class="acc-layer layer-clothing hidden" id="v-layer-shan-clothing">
+                    <img src="" class="acc-layer layer-hat hidden" id="v-layer-shan-hat">
+                  </div>
+                  <div class="victory-char-tag">閃閃</div>
+                </div>
+              </div>
+
+              <!-- 章魚裁縫師結語 -->
+              <div class="victory-speech-box">
+                <span class="octopus-icon">🐙</span>
+                <p>章魚裁縫師讚嘆道：<br><strong>「哇！每一套造型都很特別！原來服裝沒有固定的規則，只要是自己喜歡的模樣，就是最棒的選擇！」</strong></p>
+              </div>
+
+              <!-- 成果操作按鈕 -->
+              <div class="victory-btn-group">
+                <button class="btn-action-secondary" id="btn-redo-outfit">🔄 重新搭配</button>
+                <button class="btn-action-primary" id="btn-download-photo">📷 拍下紀念照</button>
+                <button class="btn-action-primary btn-next-chapter" id="btn-close-salon-popup">繼續故事 ➔</button>
+              </div>
             </div>
           </div>
         </div>
@@ -354,6 +767,13 @@
             </div>
           </div>
 
+          <!-- 伴舞小魚節奏樂團 -->
+          <div class="groove-fish-troop" id="groove-fish-troop">
+            <span class="groove-fish f1" title="小丑魚隨節奏搖擺">🐠</span>
+            <span class="groove-fish f2" title="小海龜開心拍手">🐢</span>
+            <span class="groove-fish f3" title="小魟魚輕快滑行">🐟</span>
+          </div>
+
           <div class="stage-celebration-toast hidden" id="toast-wedding-ready">
             🎉 波光共融能量達 100%！號角響起，婚禮正式開始！
           </div>
@@ -400,6 +820,11 @@
             <strong>「愛是兩個人一起創作出來的彩虹。」</strong></p>
           </div>
           <div class="fireworks-tap-tip">點擊畫面任意處，施放泡泡煙火！🫧</div>
+          <!-- 隱藏彩蛋 5：愛之環共鳴金光 -->
+          <div class="easter-egg-hotspot egg-rings" data-egg="rings" title="觸碰愛之環發出魔法金光！">
+            <span class="egg-icon">💍</span>
+            <span class="egg-sparkle">✨</span>
+          </div>
         </div>
       </section>
 
@@ -492,11 +917,11 @@
           <option value="1">P1 封面</option>
           <option value="2">P2–P3 第 1 幕：波光城的祕密（大跨頁）</option>
           <option value="3">P4–P5 第 2 幕：心靈相通的求婚（單頁對開）</option>
-          <option value="4">P6–P7 第 3 幕：【關卡 1】深海聚光燈</option>
+          <option value="4">P6–P7 第 3 幕：【關卡 1】波光城的神祕邀請函</option>
           <option value="5">P8–P9 第 4 幕：籌備現場 vs. 螃蟹阿姨（單頁對開）</option>
-          <option value="6">P10–P11 第 5 幕：【關卡 2】思維泡泡戳戳樂</option>
+          <option value="6">P10–P11 第 5 幕：【關卡 2】打破刻板印象泡泡</option>
           <option value="7">P12–P13 第 6 幕：愛的形狀與歡呼（單頁對開）</option>
-          <option value="8">P14–P15 第 7 幕：【關卡 3】無界限造型沙龍</option>
+          <option value="8">P14–P15 第 7 幕：【關卡 3】波光城婚禮造型設計師</option>
           <option value="9">P16–P17 第 8 幕：愛之環的承諾（單頁對開）</option>
           <option value="10">P18–P19 第 9 幕：【關卡 4】波光交響布置</option>
           <option value="11">P20–P21 第 10 幕：【關卡 5】愛之環誓約連線</option>
