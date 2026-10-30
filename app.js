@@ -446,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
       id: 1,
       target: "crab",
       residentName: "螃蟹阿姨",
-      cheerImg: "images/level1/cheer_crab.png",
+      cheerImg: "images/cheer_crab.png",
       hints: [
         "我的盔甲不會跟著身體一起長大，想長大，就得先換掉舊盔甲。",
         "保護我的硬殼長在身體外面，身旁還有分節的附肢。",
@@ -461,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
       id: 2,
       target: "octopus",
       residentName: "章魚裁縫師",
-      cheerImg: "images/level1/cheer_octopus.png",
+      cheerImg: "images/cheer_octopus.png",
       hints: [
         "我的身體裡有三顆心臟，分工合作，幫助血液循環。",
         "我的身體柔軟，腕足上的吸盤不只能抓住東西，也能感受接觸到的物體。",
@@ -476,7 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
       id: 3,
       target: "jellyfish",
       residentName: "老水母",
-      cheerImg: "images/level1/cheer_jellyfish.png",
+      cheerImg: "images/cheer_jellyfish.png",
       hints: [
         "我沒有像人類一樣集中的大腦，卻能利用遍布身體的神經網感應環境。",
         "我的身體柔軟，含有大量水分，會隨著海流漂動，也能靠身體收縮移動。",
@@ -491,7 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
       id: 4,
       target: "dolphin",
       residentName: "海豚寶寶",
-      cheerImg: "images/level1/cheer_dolphin.png",
+      cheerImg: "images/cheer_dolphin.png",
       hints: [
         "我會發出聲音，再利用傳回來的回聲，判斷周圍物體的位置。",
         "雖然住在海裡，我卻用肺呼吸，必須回到水面換氣；我也是哺乳類動物。",
@@ -724,7 +724,16 @@ document.addEventListener("DOMContentLoaded", () => {
           renderCurrentLetter();
 
           // 開啟對應海洋知識卡彈窗
-          if (knowledgeCheerImg) knowledgeCheerImg.src = curData.cheerImg;
+          if (knowledgeCheerImg) {
+            knowledgeCheerImg.src = curData.cheerImg;
+            knowledgeCheerImg.onerror = function() {
+              if (this.src.includes('images/level1/')) {
+                this.src = this.src.replace('images/level1/', 'images/');
+              } else if (!this.src.includes('house_')) {
+                this.src = `images/house_${curData.target}.png`;
+              }
+            };
+          }
           if (knowledgeTitle) knowledgeTitle.textContent = curData.knowledge.title;
           if (knowledgeBody) knowledgeBody.textContent = curData.knowledge.content;
 
@@ -1416,6 +1425,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (veilLayer) {
         if (outfit.veil) {
           veilLayer.src = `images/accessories/${outfit.veil.file}`;
+          veilLayer.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
           veilLayer.className = `acc-layer layer-veil ${outfit.veil.extraClass || ""}`;
           veilLayer.classList.remove("hidden");
         } else {
@@ -1428,6 +1438,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (clothLayer) {
         if (outfit.clothing) {
           clothLayer.src = `images/accessories/${outfit.clothing.file}`;
+          clothLayer.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
           clothLayer.className = `acc-layer layer-clothing ${outfit.clothing.extraClass || ""}`;
           clothLayer.classList.remove("hidden");
         } else {
@@ -1440,6 +1451,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (hatLayer) {
         if (outfit.hat) {
           hatLayer.src = `images/accessories/${outfit.hat.file}`;
+          hatLayer.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
           hatLayer.className = `acc-layer layer-hat ${outfit.hat.extraClass || ""}`;
           hatLayer.classList.remove("hidden");
         } else {
@@ -1523,7 +1535,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const card = document.createElement("div");
         card.className = `cloth-item-card ${isEquipped ? "active-equipped" : ""}`;
         card.innerHTML = `
-          <img src="images/accessories/${item.file}" alt="${item.name}" class="cloth-item-thumb">
+          <img src="images/accessories/${item.file}" alt="${item.name}" class="cloth-item-thumb" onerror="if(this.src.includes('/accessories/')){this.src=this.src.replace('/accessories/','/');}">
           <span class="name">${item.name}</span>
         `;
         card.addEventListener("click", () => toggleEquipItem(item));
@@ -1588,18 +1600,21 @@ document.addEventListener("DOMContentLoaded", () => {
       const vLiangHat = document.getElementById("v-layer-liang-hat");
       if (salonState.liang.veil) {
         vLiangVeil.src = `images/accessories/${salonState.liang.veil.file}`;
+        vLiangVeil.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
         vLiangVeil.className = `acc-layer layer-veil ${salonState.liang.veil.extraClass || ""}`;
         vLiangVeil.classList.remove("hidden");
       } else { vLiangVeil.classList.add("hidden"); }
 
       if (salonState.liang.clothing) {
         vLiangCloth.src = `images/accessories/${salonState.liang.clothing.file}`;
+        vLiangCloth.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
         vLiangCloth.className = `acc-layer layer-clothing ${salonState.liang.clothing.extraClass || ""}`;
         vLiangCloth.classList.remove("hidden");
       } else { vLiangCloth.classList.add("hidden"); }
 
       if (salonState.liang.hat) {
         vLiangHat.src = `images/accessories/${salonState.liang.hat.file}`;
+        vLiangHat.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
         vLiangHat.className = `acc-layer layer-hat ${salonState.liang.hat.extraClass || ""}`;
         vLiangHat.classList.remove("hidden");
       } else { vLiangHat.classList.add("hidden"); }
@@ -1610,18 +1625,21 @@ document.addEventListener("DOMContentLoaded", () => {
       const vShanHat = document.getElementById("v-layer-shan-hat");
       if (salonState.shan.veil) {
         vShanVeil.src = `images/accessories/${salonState.shan.veil.file}`;
+        vShanVeil.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
         vShanVeil.className = `acc-layer layer-veil ${salonState.shan.veil.extraClass || ""}`;
         vShanVeil.classList.remove("hidden");
       } else { vShanVeil.classList.add("hidden"); }
 
       if (salonState.shan.clothing) {
         vShanCloth.src = `images/accessories/${salonState.shan.clothing.file}`;
+        vShanCloth.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
         vShanCloth.className = `acc-layer layer-clothing ${salonState.shan.clothing.extraClass || ""}`;
         vShanCloth.classList.remove("hidden");
       } else { vShanCloth.classList.add("hidden"); }
 
       if (salonState.shan.hat) {
         vShanHat.src = `images/accessories/${salonState.shan.hat.file}`;
+        vShanHat.onerror = function() { if (this.src.includes('/accessories/')) this.src = this.src.replace('/accessories/', '/'); };
         vShanHat.className = `acc-layer layer-hat ${salonState.shan.hat.extraClass || ""}`;
         vShanHat.classList.remove("hidden");
       } else { vShanHat.classList.add("hidden"); }
