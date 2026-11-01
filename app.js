@@ -3127,7 +3127,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const stampCardItems = document.querySelectorAll(".stamp-card-item");
     const stampCountDisplay = document.getElementById("stamp-selected-count");
 
+    // 優先以 Base64 貼紙圖初始化 DOM 元素，杜絕任何路徑或 CORS 導致的破圖問題
     stampCardItems.forEach(card => {
+      const stamp = card.dataset.stamp;
+      const imgEl = card.querySelector("img.stamp-sticker-img");
+      if (imgEl && window.STAMPS_BASE64 && window.STAMPS_BASE64[stamp]) {
+        imgEl.src = window.STAMPS_BASE64[stamp];
+      }
+
       card.addEventListener("click", () => {
         const stamp = card.dataset.stamp;
         const badge = card.querySelector(".stamp-selected-badge");
