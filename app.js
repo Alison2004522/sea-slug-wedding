@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   const state = {
     currentUnit: 1,
-    totalUnits: 14,
+    totalUnits: 13,
     audioEnabled: false,
     isNarrating: false,
     isFlipping: false,
@@ -428,10 +428,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const introCard = document.getElementById("salon-intro-card");
       if (introCard) introCard.classList.remove("hidden");
     }
-    if (unitNum === 10) initLevel4StageDeco();
-    if (unitNum === 11) initLevel5Weave();
-    if (unitNum === 12) initUnit12Fireworks();
-    if (unitNum === 13) initLevel6Reflection();
+    if (unitNum === 10) {
+      initLevel4VenueInspector();
+      const introModal = document.getElementById("venue-intro-modal");
+      if (introModal && typeof venueInspectorResetIntro === "function") {
+        venueInspectorResetIntro();
+      }
+    }
+    if (unitNum === 11) initUnit12Fireworks();
+    if (unitNum === 12) initLevel6Reflection();
   }
 
   // ------------------------------------------
@@ -1855,163 +1860,1176 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------------------
-  // 【關卡 4・單元 10】波光交響布置
+  // 【關卡 4・單元 10】婚禮場地檢查員 (非線性探索・全景引導・物件鎖定版)
   // ------------------------------------------
-  let decoInited = false;
-  function initLevel4StageDeco() {
-    if (decoInited) return;
-    decoInited = true;
+  let venueInspectorInited = false;
+  let venueInspectorResetIntro = null;
 
-    const fillBar = document.getElementById("harmony-fill");
-    const pctLabel = document.getElementById("harmony-percentage");
-    const toast = document.getElementById("toast-wedding-ready");
+  const venueInspectorState = {
+    // 四大任務完成狀態：1 走道、2 座位、3 燈光、4 拍照
+    completedTasks: { 1: false, 2: false, 3: false, 4: false },
+    readNeeds: {
+      crab: false,
+      octopus: false,
+      jellyfish: false,
+      dolphin: false
+    },
+    focusedResident: null, // 初始為 null (全景引導模式)
+    currentSpeaker: null,
 
-    function addHarmony(amount) {
-      state.harmonyScore = Math.min(100, state.harmonyScore + amount);
-      fillBar.style.width = `${state.harmonyScore}%`;
-      pctLabel.textContent = `${state.harmonyScore}%`;
+    // 任務 1：走道裝飾物品放置 (chair, stand, sign)
+    itemPositions: {
+      chair: "corridor-1", // 擋住通道
+      stand: "corridor-2", // 擋住通道
+      sign: "side-left"    // 安全位置
+    },
+    selectedItem: null,
 
-      if (state.harmonyScore >= 100) {
-        toast.classList.remove("hidden");
-        playTone(987.77); // B5
+    // 任務 2：座位安排 (章魚裁縫師與海龜朋友)
+    signType: "gender_split", // "gender_split" or "free_seating"
+    guestSeats: {
+      octopus: null,        // 座位 1~6 或 null
+      octopus_friend: null  // 座位 1~6 或 null
+    },
+    selectedGuest: null,    // 點選入座選取態
+
+    // 任務 3：老水母燈光
+    lighting: {
+      stageBrightness: "bright",
+      seatBrightness: "bright", // 需為 soft
+      effect: "stable",
+      direction: "seating"      // 需為 stage
+    },
+
+    // 任務 4：海豚寶寶拍照安排
+    photoState: {
+      jumpSignRemoved: false,  // 是否撤下指定跳躍牌
+      selectedPose: null,      // "smile" or "fin"
+      dolphinConfirmed: false, // 是否確認滿意
+      photoTaken: false        // 是否已拍下照片
+    },
+
+    isReviewingVenue: false
+  };
+
+  function initLevel4VenueInspector() {
+    const root = document.getElementById("venue-inspector-game");
+    if (!root) return;
+
+    if (venueInspectorInited) {
+      if (typeof refreshVenueUI === "function") refreshVenueUI();
+      return;
+    }
+    venueInspectorInited = true;
+
+    // DOM 元素引用
+    const introModal = document.getElementById("venue-intro-modal");
+    const helpModal = document.getElementById("venue-help-modal");
+    const victoryModal = document.getElementById("venue-victory-modal");
+    const btnStartInspection = document.getElementById("btn-start-venue-inspection");
+    const btnCloseHelp = document.getElementById("btn-close-venue-help");
+    const btnViHelp = document.getElementById("btn-vi-help");
+    const btnViHint = document.getElementById("btn-vi-hint");
+    const btnViVerify = document.getElementById("btn-vi-verify");
+    const btnViTakePhoto = document.getElementById("btn-vi-take-photo");
+
+    const stepBadge = document.getElementById("vi-step-badge");
+    const progressText = document.getElementById("vi-progress-text");
+    const badgeTask1 = document.getElementById("vi-badge-task1");
+    const badgeTask2 = document.getElementById("vi-badge-task2");
+    const badgeTask3 = document.getElementById("vi-badge-task3");
+    const badgeTask4 = document.getElementById("vi-badge-task4");
+
+    const exclaimCrab = document.getElementById("exclaim-crab");
+    const exclaimOctopus = document.getElementById("exclaim-octopus");
+    const exclaimJellyfish = document.getElementById("exclaim-jellyfish");
+    const exclaimDolphin = document.getElementById("exclaim-dolphin");
+
+    const ctrlIntro = document.getElementById("vi-ctrl-intro");
+    const ctrlCrab = document.getElementById("vi-ctrl-crab");
+    const ctrlOctopus = document.getElementById("vi-ctrl-octopus");
+    const ctrlJellyfish = document.getElementById("vi-ctrl-jellyfish");
+    const ctrlDolphin = document.getElementById("vi-ctrl-dolphin");
+
+    const feedbackToast = document.getElementById("vi-feedback-toast");
+    const feedbackMsg = document.getElementById("vi-fb-msg");
+    const feedbackIcon = document.getElementById("vi-fb-icon");
+
+    // 對話區域
+    const avatarImg = document.getElementById("vi-dialogue-avatar");
+    const speakerNameEl = document.getElementById("vi-speaker-name");
+    const needTagEl = document.getElementById("vi-speech-need-tag");
+    const speechTextEl = document.getElementById("vi-speech-text");
+    const btnListenNeeds = document.getElementById("btn-listen-needs");
+
+    // 區域 1 走道物件與螃蟹
+    const moveableItems = root.querySelectorAll(".vi-moveable-item");
+    const allSlots = root.querySelectorAll(".vi-item-slot");
+    const crabImgEl = document.getElementById("actor-img-crab");
+
+    // 區域 2 座位
+    const seatingWaitingTop = document.getElementById("seating-waiting-top");
+    const seatingSignImg = document.getElementById("vi-sign-img");
+    const btnToggleSign = document.getElementById("btn-ctrl-toggle-sign");
+    const viSeatingSign = document.getElementById("vi-seating-sign");
+    const seatCells = root.querySelectorAll(".vi-seat-cell");
+    const waitingActorOctopus = document.getElementById("guest-actor-octopus");
+    const waitingActorTurtle = document.getElementById("guest-actor-turtle");
+
+    // 區域 3 燈光與老水母
+    const lightingOverlay = document.getElementById("venue-lighting-overlay");
+    const spotlightBeam = document.getElementById("venue-spotlight");
+    const lightOptionButtons = root.querySelectorAll(".btn-light-opt");
+    const jellyfishActorWrap = document.getElementById("actor-wrap-jellyfish");
+    const jellyfishImgEl = document.getElementById("actor-img-jellyfish");
+
+    // 區域 4 海豚拍照
+    const actorWrapDolphin = document.getElementById("actor-wrap-dolphin");
+    const dolphinImgEl = document.getElementById("actor-img-dolphin");
+    const jumpSignItem = document.getElementById("vi-jump-sign");
+    const btnRemoveJump = document.getElementById("btn-ctrl-remove-jump");
+    const poseButtons = root.querySelectorAll(".btn-pose-opt");
+    const btnConfirmPose = document.getElementById("btn-confirm-pose");
+    const dolphinPoseChip = document.getElementById("dolphin-pose-chip");
+    const polaroidCard = document.getElementById("polaroid-photo-card");
+    const polaroidPreview = document.getElementById("polaroid-img-preview");
+    const polaroidCaption = document.getElementById("polaroid-caption");
+
+    // 成果彈窗控制
+    const btnViewVenue = document.getElementById("btn-vi-view-venue");
+    const btnReplay = document.getElementById("btn-vi-replay");
+    const btnContinueStory = document.getElementById("btn-vi-continue-story");
+    const btnReturnSummary = document.getElementById("btn-vi-return-summary");
+    const victoryPolaroidImg = document.getElementById("v-polaroid-img");
+    const victoryPolaroidLabel = document.getElementById("v-polaroid-label");
+
+    // 角色對話台詞與表情頭像設定
+    const residentDialogues = {
+      crab: {
+        name: "螃蟹阿姨",
+        avatarConfused: "images/resident_crab_confused.png",
+        avatarHappy: "images/cheer_crab.png",
+        initial: "「入口好漂亮！可是這裡有點擠，我想和朋友一起進去，卻不太方便。」",
+        detail: "「通道中央被椅子和花架擋住了！如果能把走道空出來，我和朋友就可以順暢地進去了。」",
+        solved: "「哇！走道變得好寬敞，我和朋友可以並肩走進婚禮現場囉，謝謝你！」",
+        hint: "請點選走道中央的物品，再點選兩側綠色的安全區域，把中央通道徹底空出來！"
+      },
+      octopus: {
+        name: "章魚裁縫師",
+        avatarConfused: "images/困擾章魚.png",
+        avatarHappy: "images/cheer_octopus.png",
+        initial: "「婚禮現場好熱鬧！但我看到座位牌寫著男女分開坐，我很想跟好朋友小海龜坐在一起呢……」",
+        detail: "「我們想坐在一起聊天，不用特別按照性別分開坐。可以換成大家都能自由入座的標牌，並將我們排在相鄰的座位嗎？」",
+        solved: "「太棒了！自由入座讓我和小海龜可以相鄰坐在一起，真期待婚禮開始！」",
+        hint: "點選『更換為自由入座標牌』，再拖曳章魚和小海龜至相鄰的座位（例如座位 1 與 2，或 2 與 3）！"
+      },
+      jellyfish: {
+        name: "老水母",
+        avatarConfused: "images/resident_jellyfish_dazzled.png",
+        avatarHappy: "images/cheer_jellyfish.png",
+        initial: "「哎呀呀，眼睛好酸喔……舞台上面的聚光燈好像一直照著我的眼睛，有點太刺眼了。」",
+        detail: "「我的眼睛對強光比較敏感。如果賓客座位區的燈光能柔和一點，聚光燈朝向舞台而不是座位，我就能舒服觀禮了！」",
+        solved: "「呼～現在光線柔和又舒服，聚光燈正對著舞台，太感謝你的細心調整了！」",
+        hint: "將『座位亮度』切換為『柔和』，並將『聚光方向』調整為『舞台』，避免強光直射座位！"
+      },
+      dolphin: {
+        name: "海豚寶寶",
+        avatarConfused: "images/resident_dolphin_hesitant.png",
+        avatarHappy: "images/resident_dolphin_calm.png",
+        initial: "「合照準備好了！先聽聽海豚寶寶的想法，再一起留下舒服、自在的照片吧。」",
+        detail: "「我很想一起拍照，可是今天想安靜地待在朋友旁邊，不想表演跳躍。可以幫我調整一下嗎？」",
+        solved: "「太開心了！不用勉強表演跳躍，可以照自己喜歡的樣子拍照，真是最自在的合照！」",
+        hint: "先撤下地上的『跳躍表演區』標牌，替海豚寶寶選擇一個喜歡的姿勢，再點擊確認！"
+      }
+    };
+
+    // 音效輔助
+    function playTone(freq, type = "sine", duration = 0.15) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (err) {}
+    }
+
+    function playCameraShutterSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch (e) {}
+    }
+
+    function showToast(msg, icon = "💡") {
+      if (!feedbackToast || !feedbackMsg) return;
+      if (feedbackIcon) feedbackIcon.textContent = icon;
+      feedbackMsg.textContent = msg;
+      feedbackToast.classList.remove("hidden");
+      setTimeout(() => {
+        feedbackToast.classList.add("hidden");
+      }, 4000);
+    }
+
+    // 檢查章魚與海龜是否相鄰
+    function checkSeatingAdjacent() {
+      const oSeat = venueInspectorState.guestSeats.octopus;
+      const tSeat = venueInspectorState.guestSeats.octopus_friend;
+      if (!oSeat || !tSeat) return false;
+
+      const validPairs = [
+        [1, 2], [2, 1],
+        [2, 3], [3, 2],
+        [4, 5], [5, 4],
+        [5, 6], [6, 5]
+      ];
+      return validPairs.some(p => p[0] === oSeat && p[1] === tSeat);
+    }
+
+    // 聚焦居民切換
+    function focusResident(residentKey) {
+      venueInspectorState.focusedResident = residentKey;
+      venueInspectorState.currentSpeaker = residentKey;
+
+      const crabNode = document.getElementById("actor-wrap-crab");
+      const jellyfishNode = document.getElementById("actor-wrap-jellyfish");
+      const dolphinNode = document.getElementById("actor-wrap-dolphin");
+      const octopusNode = document.getElementById("guest-actor-octopus");
+
+      [crabNode, jellyfishNode, dolphinNode, octopusNode].forEach(node => {
+        if (node) node.classList.remove("focused");
+      });
+
+      if (residentKey === "crab" && crabNode) crabNode.classList.add("focused");
+      if (residentKey === "jellyfish" && jellyfishNode) jellyfishNode.classList.add("focused");
+      if (residentKey === "dolphin" && dolphinNode) dolphinNode.classList.add("focused");
+      if (residentKey === "octopus" && octopusNode) octopusNode.classList.add("focused");
+
+      // 切換右側控制面板
+      if (ctrlIntro) ctrlIntro.classList.toggle("hidden", residentKey !== null);
+      if (ctrlCrab) ctrlCrab.classList.toggle("hidden", residentKey !== "crab");
+      if (ctrlOctopus) ctrlOctopus.classList.toggle("hidden", residentKey !== "octopus");
+      if (ctrlJellyfish) ctrlJellyfish.classList.toggle("hidden", residentKey !== "jellyfish");
+      if (ctrlDolphin) ctrlDolphin.classList.toggle("hidden", residentKey !== "dolphin");
+
+      if (stepBadge) {
+        const nameMap = { crab: "檢查入口通道", octopus: "檢查座位安排", jellyfish: "檢查舞台燈光", dolphin: "檢查合照攝影" };
+        stepBadge.textContent = nameMap[residentKey] || "自由探索中 🔍";
+      }
+
+      updateActionButtonVisibility();
+      updateDialogueUI();
+    }
+
+    function updateActionButtonVisibility() {
+      const curRes = venueInspectorState.focusedResident;
+      if (curRes === null) {
+        if (btnViVerify) btnViVerify.classList.add("hidden");
+        if (btnViTakePhoto) btnViTakePhoto.classList.add("hidden");
+        return;
+      }
+
+      const isDolphin = (curRes === "dolphin");
+      const canPhoto = isDolphin && venueInspectorState.photoState.dolphinConfirmed && !venueInspectorState.completedTasks[4];
+
+      if (btnViVerify) btnViVerify.classList.toggle("hidden", canPhoto);
+      if (btnViTakePhoto) btnViTakePhoto.classList.toggle("hidden", !canPhoto);
+    }
+
+    function updateDialogueUI() {
+      const resKey = venueInspectorState.focusedResident;
+
+      if (resKey === null) {
+        // 全景引導模式
+        if (avatarImg) avatarImg.src = "images/liang_base.png";
+        if (speakerNameEl) speakerNameEl.textContent = "婚禮小導遊";
+        if (needTagEl) {
+          needTagEl.textContent = "🌟 自由探索中";
+          needTagEl.classList.remove("read");
+        }
+        if (speechTextEl) {
+          speechTextEl.textContent = "好多海洋朋友來參加婚禮，但牠們好像都遇到了一些小問題呢！請觀察場地，點擊頭頂帶有紅色驚嘆號（❗）的朋友，傾聽牠們的需求吧！";
+        }
+        if (btnListenNeeds) btnListenNeeds.classList.add("hidden");
+        return;
+      }
+
+      const data = residentDialogues[resKey];
+      if (!data) return;
+
+      const taskIndexMap = { crab: 1, octopus: 2, jellyfish: 3, dolphin: 4 };
+      const isSolved = venueInspectorState.completedTasks[taskIndexMap[resKey]];
+      const isRead = venueInspectorState.readNeeds[resKey];
+
+      if (avatarImg) {
+        avatarImg.src = isSolved ? data.avatarHappy : data.avatarConfused;
+      }
+      if (speakerNameEl) speakerNameEl.textContent = data.name;
+
+      if (needTagEl) {
+        needTagEl.textContent = isSolved ? "困擾已解決 ✓" : (isRead ? "已了解需求" : "未聽取想法");
+        needTagEl.classList.toggle("read", isRead || isSolved);
+      }
+
+      if (speechTextEl) {
+        if (isSolved) {
+          speechTextEl.textContent = data.solved;
+        } else if (isRead) {
+          speechTextEl.textContent = data.detail;
+        } else {
+          speechTextEl.textContent = data.initial;
+        }
+      }
+
+      if (btnListenNeeds) {
+        btnListenNeeds.classList.toggle("hidden", isRead || isSolved);
       }
     }
 
-    function pulseDecoNode(node) {
-      node.classList.remove("beating");
-      void node.offsetWidth;
-      node.classList.add("beating");
-      const r = node.getBoundingClientRect();
-      const sRect = document.getElementById("book-stage").getBoundingClientRect();
-      ParticleFX.burst(r.left - sRect.left + r.width / 2, r.top - sRect.top + r.height / 2, "sparkle", 14);
-      setTimeout(() => node.classList.remove("beating"), 400);
-    }
-
-    document.getElementById("node-lights").addEventListener("click", (e) => {
-      e.currentTarget.style.background = "#fef08a";
-      pulseDecoNode(e.currentTarget);
-      playTone(587.33);
-      addHarmony(30);
-    });
-
-    document.getElementById("node-music").addEventListener("click", (e) => {
-      e.currentTarget.style.background = "#fed7aa";
-      pulseDecoNode(e.currentTarget);
+    function listenCurrentNeeds() {
+      const resKey = venueInspectorState.focusedResident;
+      if (!resKey) return;
+      venueInspectorState.readNeeds[resKey] = true;
+      playTone(523.25);
       playTone(659.25);
-      addHarmony(30);
-    });
-
-    document.getElementById("node-carpet").addEventListener("click", (e) => {
-      e.currentTarget.style.background = "#a7f3d0";
-      pulseDecoNode(e.currentTarget);
-      playTone(783.99);
-      addHarmony(20);
-    });
-
-    // 伴舞小魚群點擊互動
-    document.querySelectorAll(".groove-fish").forEach(fish => {
-      fish.addEventListener("click", (e) => {
-        e.stopPropagation();
-        playClickSFX();
-        const r = fish.getBoundingClientRect();
-        const sRect = document.getElementById("book-stage").getBoundingClientRect();
-        ParticleFX.burst(r.left - sRect.left + r.width / 2, r.top - sRect.top + r.height / 2, "bubble", 15);
-      });
-    });
-  }
-
-  // ------------------------------------------
-  // 【關卡 5・單元 11】編織愛之環連線
-  // ------------------------------------------
-  let weaveInited = false;
-  function initLevel5Weave() {
-    if (weaveInited) return;
-    weaveInited = true;
-
-    const canvas = document.getElementById("weave-canvas");
-    const ctx = canvas.getContext("2d");
-    const statusBar = document.getElementById("weave-status");
-
-    const points = [
-      { x: 140, y: 190, label: "傾聽", reached: false },
-      { x: 400, y: 110, label: "尊重", reached: false },
-      { x: 660, y: 190, label: "相伴", reached: false }
-    ];
-
-    function drawScene() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "rgba(125, 211, 252, 0.25)";
-      ctx.beginPath();
-      ctx.ellipse(300, 230, 160, 80, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "rgba(249, 168, 212, 0.25)";
-      ctx.beginPath();
-      ctx.ellipse(500, 230, 160, 80, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
-      ctx.lineWidth = 3;
-      ctx.setLineDash([6, 6]);
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      ctx.quadraticCurveTo(400, 80, points[2].x, points[2].y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      points.forEach((pt) => {
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.reached ? 15 : 10, 0, Math.PI * 2);
-        ctx.fillStyle = pt.reached ? "#f59e0b" : "rgba(255,255,255,0.8)";
-        ctx.shadowColor = "#f59e0b";
-        ctx.shadowBlur = pt.reached ? 16 : 0;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 15px 'Noto Sans TC'";
-        ctx.textAlign = "center";
-        ctx.fillText(pt.label, pt.x, pt.y + 34);
-      });
+      showToast(`已了解${residentDialogues[resKey].name}的想法！`, "👂");
+      updateDialogueUI();
     }
 
-    drawScene();
+    // 全場景 UI 與居民表情同步渲染
+    function refreshVenueUI() {
+      // 1. 進度與徽章
+      const solvedCount = Object.values(venueInspectorState.completedTasks).filter(Boolean).length;
+      if (progressText) {
+        progressText.textContent = `已完成 ${solvedCount}／4 項場地檢查`;
+      }
 
-    let isDrawing = false;
-    canvas.addEventListener("mousedown", () => isDrawing = true);
-    window.addEventListener("mouseup", () => isDrawing = false);
+      if (badgeTask1) badgeTask1.classList.toggle("completed", !!venueInspectorState.completedTasks[1]);
+      if (badgeTask2) badgeTask2.classList.toggle("completed", !!venueInspectorState.completedTasks[2]);
+      if (badgeTask3) badgeTask3.classList.toggle("completed", !!venueInspectorState.completedTasks[3]);
+      if (badgeTask4) badgeTask4.classList.toggle("completed", !!venueInspectorState.completedTasks[4]);
 
-    canvas.addEventListener("mousemove", (e) => {
-      if (!isDrawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      const x = (e.clientX - rect.left) * scaleX;
-      const y = (e.clientY - rect.top) * scaleY;
+      // 2. 驚嘆號顯隱控制（解決後消失）
+      if (exclaimCrab) exclaimCrab.classList.toggle("solved", !!venueInspectorState.completedTasks[1]);
+      if (exclaimOctopus) exclaimOctopus.classList.toggle("solved", !!venueInspectorState.completedTasks[2]);
+      if (exclaimJellyfish) exclaimJellyfish.classList.toggle("solved", !!venueInspectorState.completedTasks[3]);
+      if (exclaimDolphin) exclaimDolphin.classList.toggle("solved", !!venueInspectorState.completedTasks[4]);
 
-      points.forEach((pt, index) => {
-        const dist = Math.hypot(x - pt.x, y - pt.y);
-        if (dist < 36 && !pt.reached) {
-          pt.reached = true;
-          state.weavePointsPassed++;
-          document.getElementById(`vow-${index + 1}`).classList.add("unlocked");
-          playTone(500 + index * 150);
-          drawScene();
+      // 3. 螃蟹阿姨表情與走道物品鎖定
+      if (crabImgEl) {
+        crabImgEl.src = venueInspectorState.completedTasks[1]
+          ? "images/cheer_crab.png"
+          : "images/resident_crab_confused.png";
+      }
 
-          if (state.weavePointsPassed === 3) {
-            statusBar.innerHTML = "✨ <strong>愛之環編織完成！</strong>亮亮與閃閃套上了象徵永恆承諾的光芒！";
-            playTone(880, "triangle", 0.8);
-          } else {
-            statusBar.textContent = `已解鎖第 ${state.weavePointsPassed} 道誓約！`;
+      const isTask1Done = venueInspectorState.completedTasks[1];
+      moveableItems.forEach(itemEl => {
+        itemEl.classList.toggle("locked", isTask1Done);
+        if (isTask1Done) {
+          itemEl.removeAttribute("draggable");
+        } else {
+          itemEl.setAttribute("draggable", "true");
+        }
+      });
+
+      syncItemPositions();
+
+      // 4. 座位區同步與章魚/海龜表情切換
+      if (seatingSignImg) {
+        seatingSignImg.src = (venueInspectorState.signType === "free_seating")
+          ? "images/sign_free_seating.png"
+          : "images/sign_gender_split.png";
+      }
+      if (btnToggleSign) {
+        btnToggleSign.textContent = (venueInspectorState.signType === "free_seating")
+          ? "🏷️ 當前標牌：自由入座 ✓"
+          : "🏷️ 更換為自由入座標牌";
+      }
+
+      const isTask2Done = venueInspectorState.completedTasks[2];
+      if (viSeatingSign) viSeatingSign.classList.toggle("locked", isTask2Done);
+      if (btnToggleSign) btnToggleSign.disabled = isTask2Done;
+
+      const isAdjacent = checkSeatingAdjacent();
+
+      // 更新 6 格座位渲染（帶有拖曳支援與嚴格防重複）
+      seatCells.forEach(cell => {
+        const seatId = parseInt(cell.dataset.seat, 10);
+        cell.classList.toggle("locked", isTask2Done);
+        const occupantWrap = cell.querySelector(".seat-occupant-wrap");
+        if (!occupantWrap) return;
+        occupantWrap.innerHTML = "";
+
+        for (const [guestKey, sId] of Object.entries(venueInspectorState.guestSeats)) {
+          if (sId === seatId) {
+            const img = document.createElement("img");
+            if (guestKey === "octopus") {
+              img.src = isAdjacent ? "images/cheer_octopus.png" : "images/困擾章魚.png";
+              img.alt = "章魚裁縫師";
+            } else {
+              img.src = isAdjacent ? "images/resident_octopus_friend.png" : "images/困擾海龜.png";
+              img.alt = "好友海龜";
+            }
+            img.dataset.guest = guestKey;
+
+            // 若任務 2 未完成，座位上的角色支援再次拖曳換座
+            if (!isTask2Done) {
+              img.setAttribute("draggable", "true");
+              img.addEventListener("dragstart", (e) => {
+                focusResident("octopus");
+                e.dataTransfer.setData("text/plain", guestKey);
+              });
+            }
+
+            occupantWrap.appendChild(img);
           }
         }
       });
+
+      // 更新上方待入座朋友節點狀態
+      if (waitingActorOctopus) {
+        const isOctopusSeated = venueInspectorState.guestSeats.octopus !== null;
+        waitingActorOctopus.classList.toggle("seated-out", isOctopusSeated);
+        waitingActorOctopus.classList.toggle("locked", isTask2Done);
+        if (isTask2Done) waitingActorOctopus.removeAttribute("draggable");
+      }
+      if (waitingActorTurtle) {
+        const isTurtleSeated = venueInspectorState.guestSeats.octopus_friend !== null;
+        waitingActorTurtle.classList.toggle("seated-out", isTurtleSeated);
+        waitingActorTurtle.classList.toggle("locked", isTask2Done);
+        if (isTask2Done) waitingActorTurtle.removeAttribute("draggable");
+      }
+
+      // 5. 燈光與老水母表情狀態切換
+      const light = venueInspectorState.lighting;
+      if (lightingOverlay) {
+        lightingOverlay.className = `venue-lighting-overlay seat-${light.seatBrightness}`;
+      }
+      if (spotlightBeam) {
+        spotlightBeam.className = `venue-spotlight target-${light.direction} effect-${light.effect}`;
+      }
+
+      const isTask3Done = venueInspectorState.completedTasks[3];
+      lightOptionButtons.forEach(btn => {
+        const grp = btn.dataset.group;
+        const val = btn.dataset.val;
+        btn.classList.toggle("active", light[grp] === val);
+        btn.disabled = isTask3Done;
+        btn.classList.toggle("locked", isTask3Done);
+      });
+
+      if (jellyfishImgEl) {
+        jellyfishImgEl.src = isTask3Done
+          ? "images/cheer_jellyfish.png"
+          : "images/resident_jellyfish_dazzled.png";
+      }
+      if (jellyfishActorWrap) {
+        const isDazzled = (light.seatBrightness === "bright" || light.direction === "seating") && !isTask3Done;
+        jellyfishActorWrap.classList.toggle("dazzled-jellyfish", isDazzled);
+        jellyfishActorWrap.classList.toggle("calm-jellyfish", !isDazzled);
+      }
+
+      // 6. 海豚寶寶表情切換與拍照狀態
+      const pState = venueInspectorState.photoState;
+      const isTask4Done = venueInspectorState.completedTasks[4];
+
+      if (dolphinImgEl) {
+        dolphinImgEl.src = isTask4Done
+          ? "images/resident_dolphin_calm.png"
+          : "images/resident_dolphin_hesitant.png";
+      }
+
+      if (jumpSignItem) {
+        jumpSignItem.classList.toggle("hidden", pState.jumpSignRemoved);
+      }
+      if (btnRemoveJump) {
+        btnRemoveJump.classList.toggle("done", pState.jumpSignRemoved);
+        btnRemoveJump.textContent = pState.jumpSignRemoved ? "跳躍牌已撤下 ✓" : "收起指定跳躍牌 ✕";
+        btnRemoveJump.disabled = isTask4Done;
+      }
+
+      poseButtons.forEach(btn => {
+        const poseVal = btn.dataset.pose;
+        btn.classList.toggle("active", pState.selectedPose === poseVal);
+        btn.disabled = isTask4Done;
+      });
+
+      if (dolphinPoseChip) {
+        if (pState.selectedPose === "smile") {
+          dolphinPoseChip.textContent = "【自在微笑】";
+        } else if (pState.selectedPose === "fin") {
+          dolphinPoseChip.textContent = "【輕擺胸鰭】";
+        } else {
+          dolphinPoseChip.textContent = pState.jumpSignRemoved ? "【未定姿勢】" : "【指定跳躍】";
+        }
+      }
+
+      if (btnConfirmPose) {
+        btnConfirmPose.classList.toggle("confirmed", pState.dolphinConfirmed);
+        btnConfirmPose.textContent = pState.dolphinConfirmed ? "海豚寶寶很喜歡 ✓" : "這樣拍可以嗎？";
+        btnConfirmPose.disabled = isTask4Done;
+      }
+
+      updateActionButtonVisibility();
+      updateDialogueUI();
+    }
+
+    function syncItemPositions() {
+      moveableItems.forEach(itemEl => {
+        const itemKey = itemEl.dataset.item;
+        const slotKey = venueInspectorState.itemPositions[itemKey];
+        const slotEl = root.querySelector(`[data-slot="${slotKey}"]`);
+        if (slotEl) {
+          itemEl.style.left = `${slotEl.offsetLeft}px`;
+          itemEl.style.top = `${slotEl.offsetTop}px`;
+        }
+        itemEl.classList.toggle("selected", venueInspectorState.selectedItem === itemKey);
+      });
+    }
+
+    // 自動導引至下一個未完成居民
+    function autoGuideToNextResident(completedTaskId) {
+      const taskResidentMap = { 1: "crab", 2: "octopus", 3: "jellyfish", 4: "dolphin" };
+      const residentOrder = ["crab", "octopus", "jellyfish", "dolphin"];
+      const nextResidents = residentOrder.filter((r, idx) => !venueInspectorState.completedTasks[idx + 1]);
+
+      if (nextResidents.length > 0) {
+        setTimeout(() => {
+          focusResident(nextResidents[0]);
+          showToast(`太棒了！接著來看看${residentDialogues[nextResidents[0]].name}需要什麼協助吧！`, "✨");
+        }, 1200);
+      }
+    }
+
+    // ------------------------------------------
+    // 綁定事件監聽
+    // ------------------------------------------
+
+    // 1. 居民節點點選（非線性切換）
+    const crabInteractive = document.getElementById("actor-wrap-crab");
+    if (crabInteractive) {
+      crabInteractive.addEventListener("click", () => {
+        focusResident("crab");
+        playTone(440);
+      });
+    }
+
+    const jellyfishInteractive = document.getElementById("actor-wrap-jellyfish");
+    if (jellyfishInteractive) {
+      jellyfishInteractive.addEventListener("click", () => {
+        focusResident("jellyfish");
+        playTone(493.88);
+      });
+    }
+
+    const dolphinInteractive = document.getElementById("actor-wrap-dolphin");
+    if (dolphinInteractive) {
+      dolphinInteractive.addEventListener("click", () => {
+        focusResident("dolphin");
+        playTone(587.33);
+      });
+    }
+
+    if (waitingActorOctopus) {
+      waitingActorOctopus.addEventListener("click", () => {
+        focusResident("octopus");
+        playTone(523.25);
+      });
+    }
+
+    if (waitingActorTurtle) {
+      waitingActorTurtle.addEventListener("click", () => {
+        focusResident("octopus");
+        playTone(523.25);
+      });
+    }
+
+    if (badgeTask1) badgeTask1.addEventListener("click", () => focusResident("crab"));
+    if (badgeTask2) badgeTask2.addEventListener("click", () => focusResident("octopus"));
+    if (badgeTask3) badgeTask3.addEventListener("click", () => focusResident("jellyfish"));
+    if (badgeTask4) badgeTask4.addEventListener("click", () => focusResident("dolphin"));
+
+    if (btnListenNeeds) {
+      btnListenNeeds.addEventListener("click", listenCurrentNeeds);
+    }
+
+    // 2. 任務一：走道物件點選與放置（拖曳與點擊防呆）
+    moveableItems.forEach(item => {
+      item.addEventListener("click", (e) => {
+        if (venueInspectorState.completedTasks[1]) return; // 已鎖定
+        e.stopPropagation();
+        focusResident("crab");
+        const itemKey = item.dataset.item;
+        if (venueInspectorState.selectedItem === itemKey) {
+          venueInspectorState.selectedItem = null;
+        } else {
+          venueInspectorState.selectedItem = itemKey;
+          playTone(440);
+          showToast("已選取物件，請點選要放置的綠色安全槽位！", "📦");
+        }
+        refreshVenueUI();
+      });
+
+      item.addEventListener("dragstart", (e) => {
+        if (venueInspectorState.completedTasks[1]) return;
+        focusResident("crab");
+        venueInspectorState.selectedItem = item.dataset.item;
+        e.dataTransfer.setData("text/plain", item.dataset.item);
+      });
     });
+
+    allSlots.forEach(slot => {
+      slot.addEventListener("click", () => {
+        if (venueInspectorState.completedTasks[1]) return;
+        if (!venueInspectorState.selectedItem) return;
+        const itemKey = venueInspectorState.selectedItem;
+        const targetSlot = slot.dataset.slot;
+
+        for (const [it, sl] of Object.entries(venueInspectorState.itemPositions)) {
+          if (sl === targetSlot && it !== itemKey) {
+            venueInspectorState.itemPositions[it] = venueInspectorState.itemPositions[itemKey];
+          }
+        }
+        venueInspectorState.itemPositions[itemKey] = targetSlot;
+        venueInspectorState.selectedItem = null;
+        playTone(587.33);
+        refreshVenueUI();
+      });
+
+      slot.addEventListener("dragover", (e) => e.preventDefault());
+      slot.addEventListener("drop", (e) => {
+        if (venueInspectorState.completedTasks[1]) return;
+        e.preventDefault();
+        const itemKey = e.dataTransfer.getData("text/plain") || venueInspectorState.selectedItem;
+        if (!itemKey) return;
+        const targetSlot = slot.dataset.slot;
+
+        for (const [it, sl] of Object.entries(venueInspectorState.itemPositions)) {
+          if (sl === targetSlot && it !== itemKey) {
+            venueInspectorState.itemPositions[it] = venueInspectorState.itemPositions[itemKey];
+          }
+        }
+        venueInspectorState.itemPositions[itemKey] = targetSlot;
+        venueInspectorState.selectedItem = null;
+        playTone(587.33);
+        refreshVenueUI();
+      });
+    });
+
+    // 3. 任務二：座位切換標牌與純拖曳入座（入座後可再次拖曳更換座位）
+    if (btnToggleSign) {
+      btnToggleSign.addEventListener("click", () => {
+        if (venueInspectorState.completedTasks[2]) return;
+        focusResident("octopus");
+        venueInspectorState.signType = (venueInspectorState.signType === "gender_split")
+          ? "free_seating"
+          : "gender_split";
+        playTone(659.25);
+        if (venueInspectorState.signType === "free_seating") {
+          showToast("已更換為自由入座標牌！大家可以自由選擇喜歡的位子。", "🏷️");
+        }
+        refreshVenueUI();
+      });
+    }
+
+    if (viSeatingSign) {
+      viSeatingSign.addEventListener("click", () => {
+        if (venueInspectorState.completedTasks[2]) return;
+        if (btnToggleSign) btnToggleSign.click();
+      });
+    }
+
+    // 上方待入座角色拖曳綁定
+    function bindTopGuestDrag(el, guestKey) {
+      if (!el) return;
+      el.addEventListener("dragstart", (e) => {
+        if (venueInspectorState.completedTasks[2]) return;
+        focusResident("octopus");
+        e.dataTransfer.setData("text/plain", guestKey);
+      });
+      // 也支援點擊選取入座
+      el.addEventListener("click", (e) => {
+        if (venueInspectorState.completedTasks[2]) return;
+        e.stopPropagation();
+        focusResident("octopus");
+        if (venueInspectorState.selectedGuest === guestKey) {
+          venueInspectorState.selectedGuest = null;
+        } else {
+          venueInspectorState.selectedGuest = guestKey;
+          playTone(523.25);
+          showToast(`已選取${guestKey === "octopus" ? "章魚裁縫師" : "好友海龜"}，請拖曳或點選座位安排入座！`, "🪑");
+        }
+        refreshVenueUI();
+      });
+    }
+
+    bindTopGuestDrag(waitingActorOctopus, "octopus");
+    bindTopGuestDrag(waitingActorTurtle, "octopus_friend");
+
+    // 上方區域支援拖回放手（取消入座）
+    if (seatingWaitingTop) {
+      seatingWaitingTop.addEventListener("dragover", (e) => e.preventDefault());
+      seatingWaitingTop.addEventListener("drop", (e) => {
+        if (venueInspectorState.completedTasks[2]) return;
+        e.preventDefault();
+        const gKey = e.dataTransfer.getData("text/plain");
+        if (gKey === "octopus" || gKey === "octopus_friend") {
+          venueInspectorState.guestSeats[gKey] = null;
+          venueInspectorState.selectedGuest = null;
+          playTone(440);
+          showToast(`已將${gKey === "octopus" ? "章魚裁縫師" : "好友海龜"}移回上方！`, "↩️");
+          refreshVenueUI();
+        }
+      });
+    }
+
+    // 6 格座位拖放處理（支援從上方拖入、從座位拖到另一個座位、點擊入座）
+    seatCells.forEach(cell => {
+      const seatId = parseInt(cell.dataset.seat, 10);
+
+      cell.addEventListener("dragover", (e) => e.preventDefault());
+      cell.addEventListener("drop", (e) => {
+        if (venueInspectorState.completedTasks[2]) return;
+        e.preventDefault();
+        const gKey = e.dataTransfer.getData("text/plain");
+        if (gKey !== "octopus" && gKey !== "octopus_friend") return;
+
+        focusResident("octopus");
+        const origSeat = venueInspectorState.guestSeats[gKey];
+        const otherKey = (gKey === "octopus") ? "octopus_friend" : "octopus";
+
+        // 若目標座位上已有另一個角色，兩者交換座位！
+        if (venueInspectorState.guestSeats[otherKey] === seatId) {
+          venueInspectorState.guestSeats[otherKey] = origSeat;
+        }
+
+        // 指派新座位
+        venueInspectorState.guestSeats[gKey] = seatId;
+        venueInspectorState.selectedGuest = null;
+        playTone(659.25);
+        refreshVenueUI();
+      });
+
+      // 點擊入座防呆相容
+      cell.addEventListener("click", () => {
+        if (venueInspectorState.completedTasks[2]) return;
+        focusResident("octopus");
+
+        if (venueInspectorState.selectedGuest) {
+          const gKey = venueInspectorState.selectedGuest;
+          const origSeat = venueInspectorState.guestSeats[gKey];
+          const otherKey = (gKey === "octopus") ? "octopus_friend" : "octopus";
+
+          if (venueInspectorState.guestSeats[otherKey] === seatId) {
+            venueInspectorState.guestSeats[otherKey] = origSeat;
+          }
+          venueInspectorState.guestSeats[gKey] = seatId;
+          venueInspectorState.selectedGuest = null;
+          playTone(659.25);
+        } else {
+          // 點擊已有角色的座位可取消入座（放回上方）
+          for (const [gKey, sId] of Object.entries(venueInspectorState.guestSeats)) {
+            if (sId === seatId) {
+              venueInspectorState.guestSeats[gKey] = null;
+              playTone(440);
+              break;
+            }
+          }
+        }
+        refreshVenueUI();
+      });
+    });
+
+    // 4. 任務三：老水母燈光控制
+    lightOptionButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (venueInspectorState.completedTasks[3]) return;
+        focusResident("jellyfish");
+        const grp = btn.dataset.group;
+        const val = btn.dataset.val;
+        venueInspectorState.lighting[grp] = val;
+        playTone(523.25);
+        refreshVenueUI();
+      });
+    });
+
+    // 5. 任務四：海豚合照攝影互動
+    function removeJumpSignAction() {
+      if (venueInspectorState.completedTasks[4]) return;
+      focusResident("dolphin");
+      if (!venueInspectorState.readNeeds.dolphin) {
+        showToast("先問問海豚寶寶想怎麼拍吧！", "👂");
+        return;
+      }
+      venueInspectorState.photoState.jumpSignRemoved = true;
+      venueInspectorState.photoState.dolphinConfirmed = false;
+      playTone(659.25);
+      showToast("跳躍表演區標牌已撤下！現在請幫海豚寶寶選擇一個舒服的姿勢。", "✨");
+      refreshVenueUI();
+    }
+
+    if (btnRemoveJump) btnRemoveJump.addEventListener("click", removeJumpSignAction);
+    if (jumpSignItem) jumpSignItem.addEventListener("click", removeJumpSignAction);
+
+    poseButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (venueInspectorState.completedTasks[4]) return;
+        focusResident("dolphin");
+        if (!venueInspectorState.readNeeds.dolphin) {
+          showToast("先問問海豚寶寶想怎麼拍吧！", "👂");
+          return;
+        }
+        if (!venueInspectorState.photoState.jumpSignRemoved) {
+          showToast("請先收起地上的跳躍表演區標牌喔！", "🏷️");
+          return;
+        }
+        const pose = btn.dataset.pose;
+        venueInspectorState.photoState.selectedPose = pose;
+        venueInspectorState.photoState.dolphinConfirmed = false;
+        playTone(783.99);
+        refreshVenueUI();
+      });
+    });
+
+    if (btnConfirmPose) {
+      btnConfirmPose.addEventListener("click", () => {
+        if (venueInspectorState.completedTasks[4]) return;
+        focusResident("dolphin");
+        if (!venueInspectorState.readNeeds.dolphin) {
+          showToast("先問問海豚寶寶想怎麼拍吧！", "👂");
+          return;
+        }
+        if (!venueInspectorState.photoState.jumpSignRemoved) {
+          showToast("地上的跳躍表演區標牌還在呢，先收起來吧！", "🏷️");
+          return;
+        }
+        if (!venueInspectorState.photoState.selectedPose) {
+          showToast("請先選擇一個海豚寶寶喜歡的姿勢喔！", "🐬");
+          return;
+        }
+
+        venueInspectorState.photoState.dolphinConfirmed = true;
+        playTone(880);
+        showToast("海豚寶寶：「這個姿勢好自在，我很喜歡！請幫我們拍張照吧！」", "💖");
+        refreshVenueUI();
+      });
+    }
+
+    // 拍照按鈕（展示 1.5 秒後自動隱藏）
+    if (btnViTakePhoto) {
+      btnViTakePhoto.addEventListener("click", () => {
+        if (!venueInspectorState.photoState.dolphinConfirmed) {
+          showToast("請先確認海豚寶寶滿意這個拍照安排喔！", "🐬");
+          return;
+        }
+
+        playCameraShutterSound();
+        venueInspectorState.photoState.photoTaken = true;
+        venueInspectorState.completedTasks[4] = true;
+
+        const sceneCanvas = document.getElementById("venue-scene-canvas");
+        if (sceneCanvas) {
+          sceneCanvas.style.transition = "filter 0.08s ease";
+          sceneCanvas.style.filter = "brightness(2.2)";
+          setTimeout(() => {
+            sceneCanvas.style.filter = "none";
+          }, 120);
+        }
+
+        if (polaroidCard) {
+          polaroidCard.classList.remove("hidden");
+          polaroidCard.classList.remove("fade-out");
+          if (polaroidPreview) polaroidPreview.src = "images/resident_dolphin_calm.png";
+          if (polaroidCaption) {
+            polaroidCaption.textContent = (venueInspectorState.photoState.selectedPose === "smile")
+              ? "🌟 婚禮試拍：自在微笑合照"
+              : "🌟 婚禮試拍：輕擺胸鰭自在留念";
+          }
+
+          // 精準展示 1.5 秒後淡出隱藏
+          setTimeout(() => {
+            polaroidCard.classList.add("fade-out");
+            setTimeout(() => {
+              polaroidCard.classList.add("hidden");
+            }, 400);
+          }, 1500);
+        }
+
+        if (victoryPolaroidImg) victoryPolaroidImg.src = "images/resident_dolphin_calm.png";
+        if (victoryPolaroidLabel) {
+          victoryPolaroidLabel.textContent = (venueInspectorState.photoState.selectedPose === "smile")
+            ? "🌟 婚禮試拍：自在微笑合照"
+            : "🌟 婚禮試拍：輕擺胸鰭自在留念";
+        }
+
+        playTone(523.25);
+        playTone(659.25);
+        playTone(783.99);
+        showToast("喀嚓！一張舒服又自在的婚禮試拍合照出爐囉！", "📸");
+
+        refreshVenueUI();
+        checkAllTasksCompletion();
+        autoGuideToNextResident(4);
+      });
+    }
+
+    // 6. 「邀請朋友試試看」驗證邏輯
+    if (btnViVerify) {
+      btnViVerify.addEventListener("click", () => {
+        const curRes = venueInspectorState.focusedResident;
+
+        if (curRes === "crab") {
+          // 任務 1 驗證：檢查所有物品（椅、花架、立牌），通道區 A 或 B 有任何物件即阻擋
+          if (!venueInspectorState.readNeeds.crab) {
+            showToast("先聽聽螃蟹阿姨的想法，才知道哪裡需要調整喔！", "👂");
+            return;
+          }
+
+          const isCorridorBlocked = Object.values(venueInspectorState.itemPositions).some(
+            pos => pos === "corridor-1" || pos === "corridor-2"
+          );
+
+          if (isCorridorBlocked) {
+            playTone(300, "triangle");
+            showToast("通道中央好像還有物品擋住喔，請把走道徹底空出來！", "🦀");
+            return;
+          }
+
+          venueInspectorState.completedTasks[1] = true;
+          playTone(523.25);
+          playTone(659.25);
+          showToast("螃蟹阿姨：「走道好寬敞！我和朋友可以順利通過了，謝謝你！」", "🎉");
+          refreshVenueUI();
+          checkAllTasksCompletion();
+          autoGuideToNextResident(1);
+
+        } else if (curRes === "octopus") {
+          // 任務 2 驗證
+          if (!venueInspectorState.readNeeds.octopus) {
+            showToast("先聽聽章魚裁縫師的想法，再安排座位吧！", "👂");
+            return;
+          }
+          if (venueInspectorState.signType !== "free_seating") {
+            playTone(300, "triangle");
+            showToast("座位牌還是性別分座呢，換成自由入座試試看吧！", "🏷️");
+            return;
+          }
+
+          const oSeat = venueInspectorState.guestSeats.octopus;
+          const tSeat = venueInspectorState.guestSeats.octopus_friend;
+
+          if (oSeat === null || tSeat === null) {
+            playTone(300, "triangle");
+            showToast("章魚裁縫師和小海龜還沒有全部入座喔！", "🐙");
+            return;
+          }
+
+          if (!checkSeatingAdjacent()) {
+            playTone(300, "triangle");
+            showToast("章魚和小海龜坐得有點遠，牠們想坐在一起聊天喔！", "🐙");
+            return;
+          }
+
+          venueInspectorState.completedTasks[2] = true;
+          playTone(523.25);
+          playTone(659.25);
+          showToast("章魚裁縫師：「自由入座太棒了，我和小海龜相鄰坐在一起囉！」", "🎉");
+          refreshVenueUI();
+          checkAllTasksCompletion();
+          autoGuideToNextResident(2);
+
+        } else if (curRes === "jellyfish") {
+          // 任務 3 驗證
+          if (!venueInspectorState.readNeeds.jellyfish) {
+            showToast("先聽聽老水母的想法，了解對光線的需求吧！", "👂");
+            return;
+          }
+          const light = venueInspectorState.lighting;
+          const seatOk = (light.seatBrightness === "soft");
+          const dirOk = (light.direction === "stage");
+
+          if (!seatOk || !dirOk) {
+            playTone(300, "triangle");
+            if (!seatOk && !dirOk) {
+              showToast("座位區還是太亮了，而且聚光燈直射座位，老水母覺得很刺眼呢！", "🪼");
+            } else if (!seatOk) {
+              showToast("座位區光線還是太刺眼了，調成柔和試試看吧！", "🪼");
+            } else {
+              showToast("聚光燈還照著座位區呢，讓它照向舞台吧！", "🪼");
+            }
+            return;
+          }
+
+          venueInspectorState.completedTasks[3] = true;
+          playTone(523.25);
+          playTone(659.25);
+          showToast("老水母：「光線變得好柔和，舞台清清楚楚，太舒服了！」", "🎉");
+          refreshVenueUI();
+          checkAllTasksCompletion();
+          autoGuideToNextResident(3);
+
+        } else if (curRes === "dolphin") {
+          // 任務 4 驗證
+          if (!venueInspectorState.readNeeds.dolphin) {
+            showToast("先聽聽海豚寶寶的想法，再安排拍照吧！", "👂");
+            return;
+          }
+          if (!venueInspectorState.photoState.jumpSignRemoved) {
+            showToast("地上的跳躍表演區標牌還在呢，先收起來吧！", "🏷️");
+            return;
+          }
+          if (!venueInspectorState.photoState.selectedPose) {
+            showToast("請先替海豚寶寶選一個喜歡的姿勢喔！", "🐬");
+            return;
+          }
+          if (!venueInspectorState.photoState.dolphinConfirmed) {
+            showToast("請點擊『這樣拍可以嗎？』確認海豚寶寶的意願！", "🤝");
+            return;
+          }
+        }
+      });
+    }
+
+    // 檢查是否 4 項全部完成
+    function checkAllTasksCompletion() {
+      const allDone = venueInspectorState.completedTasks[1] &&
+                      venueInspectorState.completedTasks[2] &&
+                      venueInspectorState.completedTasks[3] &&
+                      venueInspectorState.completedTasks[4];
+
+      if (allDone) {
+        playTone(523.25);
+        setTimeout(() => playTone(659.25), 150);
+        setTimeout(() => playTone(783.99), 300);
+        setTimeout(() => playTone(1046.50), 450);
+
+        setTimeout(() => {
+          if (victoryModal) victoryModal.classList.remove("hidden");
+        }, 900);
+      }
+    }
+
+    // 7. 工具按鈕：提示與說明彈窗
+    if (btnViHint) {
+      btnViHint.addEventListener("click", () => {
+        const resKey = venueInspectorState.focusedResident;
+        if (!resKey) {
+          showToast("點擊場景中頭頂帶有紅色驚嘆號（❗）的朋友，協助牠們完成婚禮準備！", "💡");
+          return;
+        }
+        const hintText = residentDialogues[resKey].hint;
+        playTone(600);
+        showToast(hintText, "💡");
+      });
+    }
+
+    if (btnViHelp) {
+      btnViHelp.addEventListener("click", () => {
+        playTone(650);
+        if (helpModal) helpModal.classList.remove("hidden");
+      });
+    }
+
+    if (btnCloseHelp) {
+      btnCloseHelp.addEventListener("click", () => {
+        playTone(500);
+        if (helpModal) helpModal.classList.add("hidden");
+      });
+    }
+
+    if (btnStartInspection) {
+      btnStartInspection.addEventListener("click", () => {
+        playTone(587.33);
+        if (introModal) introModal.classList.add("hidden");
+        focusResident(null); // 開場進入全景引導模式
+      });
+    }
+
+    // 成果彈窗操作
+    if (btnViewVenue) {
+      btnViewVenue.addEventListener("click", () => {
+        playTone(440);
+        venueInspectorState.isReviewingVenue = true;
+        if (victoryModal) victoryModal.classList.add("hidden");
+        if (btnReturnSummary) btnReturnSummary.classList.remove("hidden");
+        showToast("自由瀏覽婚禮場地中，隨時可點擊右下角查看成果！", "👀");
+      });
+    }
+
+    if (btnReturnSummary) {
+      btnReturnSummary.addEventListener("click", () => {
+        playTone(523.25);
+        if (victoryModal) victoryModal.classList.remove("hidden");
+        btnReturnSummary.classList.add("hidden");
+      });
+    }
+
+    if (btnReplay) {
+      btnReplay.addEventListener("click", () => {
+        playTone(440);
+        venueInspectorState.completedTasks = { 1: false, 2: false, 3: false, 4: false };
+        venueInspectorState.readNeeds = { crab: false, octopus: false, jellyfish: false, dolphin: false };
+        venueInspectorState.itemPositions = { chair: "corridor-1", stand: "corridor-2", sign: "side-left" };
+        venueInspectorState.selectedItem = null;
+        venueInspectorState.signType = "gender_split";
+        venueInspectorState.guestSeats = { octopus: null, octopus_friend: null };
+        venueInspectorState.selectedGuest = null;
+        venueInspectorState.lighting = { stageBrightness: "bright", seatBrightness: "bright", effect: "stable", direction: "seating" };
+        venueInspectorState.photoState = { jumpSignRemoved: false, selectedPose: null, dolphinConfirmed: false, photoTaken: false };
+        venueInspectorState.focusedResident = null;
+
+        if (victoryModal) victoryModal.classList.add("hidden");
+        if (btnReturnSummary) btnReturnSummary.classList.add("hidden");
+
+        refreshVenueUI();
+        focusResident(null);
+        showToast("場地檢查已重設，重新開始挑戰！", "🔄");
+      });
+    }
+
+    if (btnContinueStory) {
+      btnContinueStory.addEventListener("click", () => {
+        playTone(987.77);
+        if (victoryModal) victoryModal.classList.add("hidden");
+        goToUnit(11);
+      });
+    }
+
+    venueInspectorResetIntro = function() {
+      const allDone = venueInspectorState.completedTasks[1] &&
+                      venueInspectorState.completedTasks[2] &&
+                      venueInspectorState.completedTasks[3] &&
+                      venueInspectorState.completedTasks[4];
+      if (!allDone && introModal) {
+        introModal.classList.remove("hidden");
+      }
+    };
+
+    // 初次初始化渲染
+    refreshVenueUI();
+    focusResident(null); // 初始全景引導模式
+    window.addEventListener("resize", syncItemPositions);
   }
 
+
   // ------------------------------------------
-  // 【單元 12】彩虹泡泡煙火點擊
+  // 【單元 11】彩虹泡泡煙火點擊
   // ------------------------------------------
   function initUnit12Fireworks() {
     const zone = document.getElementById("fireworks-canvas-zone");
@@ -2054,7 +3072,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------------------
-  // 【關卡 6・單元 13】小海兔星空手帳與證書
+  // 【關卡 5・單元 12】小海兔星空手帳與證書
   // ------------------------------------------
   let reflectionInited = false;
   function initLevel6Reflection() {

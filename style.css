@@ -334,6 +334,7 @@ body {
   height: 100%;
   display: flex;
   background: #0d1e2e;
+  position: relative;
 }
 
 .single-panel {
@@ -344,7 +345,65 @@ body {
 }
 
 .panel-left {
-  border-right: 1px solid rgba(0, 0, 0, 0.25);
+  border-right: none;
+}
+
+/* =========================================================
+   實體書中縫書壓與立體裝訂陰影 (Realistic Gutter Crease Shadow)
+   參考實體精裝書攤開之中間陰影與紙張內陷弧度
+   ========================================================= */
+.dual-panels-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  /* 多重漸層：中央裝訂深縫 (1px) ＋ 兩側雙向擴散紙張內陷陰影 */
+  background: 
+    linear-gradient(to right, transparent calc(50% - 1px), rgba(0, 0, 0, 0.85) 50%, transparent calc(50% + 1px)),
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.1) 18%,
+      rgba(0, 0, 0, 0.32) 36%,
+      rgba(0, 0, 0, 0.65) 47%,
+      rgba(0, 0, 0, 0.88) 50%,
+      rgba(0, 0, 0, 0.65) 53%,
+      rgba(0, 0, 0, 0.32) 64%,
+      rgba(0, 0, 0, 0.1) 82%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  pointer-events: none;
+  z-index: 25;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.4);
+}
+
+/* 左頁靠近中縫處的紙張弧度立體漸層 */
+.panel-left::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.35) 100%);
+  pointer-events: none;
+  z-index: 15;
+}
+
+/* 右頁靠近中縫處的紙張弧度立體漸層 */
+.panel-right::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 32px;
+  background: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 0.35) 100%);
+  pointer-events: none;
+  z-index: 15;
 }
 
 .panel-img {
@@ -378,33 +437,35 @@ body {
 .floating-text-box p {
   font-size: 21px;
   line-height: 1.9;
-  color: #ffffff;
+  color: #ffffff !important;
   font-weight: 700;
   letter-spacing: 0.8px;
   text-shadow: 
-    0 2px 10px rgba(0, 0, 0, 0.92),
-    0 0 24px rgba(0, 0, 0, 0.7),
+    0 2px 10px rgba(0, 0, 0, 0.95),
+    0 0 24px rgba(0, 0, 0, 0.85),
     0 0 4px rgba(0, 0, 0, 0.95);
 }
 
 .floating-text-box strong {
   font-weight: 800;
-  color: #fef08a;
+  color: #ffffff !important;
+  letter-spacing: 1px;
   text-shadow: 
-    0 2px 10px rgba(0, 0, 0, 0.95),
-    0 0 20px rgba(254, 240, 138, 0.5),
-    0 0 4px rgba(0, 0, 0, 0.95);
+    0 2px 12px rgba(0, 0, 0, 0.98),
+    0 0 28px rgba(0, 0, 0, 0.9),
+    0 0 5px rgba(0, 0, 0, 0.98);
 }
 
 .floating-text-box .counter-badge {
-  color: #38bdf8;
+  color: #ffffff !important;
   font-size: 17px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+  font-weight: 800;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
 }
 
 .floating-text-box .sub-hint {
-  color: #e2e8f0 !important;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95) !important;
 }
 
 /* 浮動方位精準錨定 */
@@ -2347,53 +2408,1409 @@ body {
 }
 
 /* 關卡 4：舞台布置 */
-.game-stage-deco {
-  background: radial-gradient(circle at 50% 50%, #164e63, #082f49);
-}
-
-.wedding-stage-interactive {
-  flex: 1;
+/* =========================================================
+   【關卡 4】婚禮場地檢查員 (Wedding Venue Inspector)
+   ========================================================= */
+.game-venue-inspector {
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #061826;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* 頂部資訊列 */
+.venue-header-bar {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  padding: 8px 18px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 25;
 }
 
-.deco-interactive-node {
-  background: #fff;
-  padding: 18px 28px;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-  font-size: 17px;
+.venue-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.venue-game-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: 0.5px;
+}
+
+.venue-step-badge {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #fff;
+  font-size: 13px;
   font-weight: 700;
-  transition: all 0.25s ease;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
 }
 
-.deco-interactive-node:hover {
-  transform: scale(1.08);
+.venue-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.meter-banner {
+.vi-progress-box {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  background: rgba(30, 41, 59, 0.7);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.vi-progress-label {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.vi-progress-text {
+  font-size: 14px;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.vi-badges-row {
+  display: flex;
+  gap: 4px;
+  margin-left: 6px;
+}
+
+.vi-mini-badge {
+  font-size: 12px;
   font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  transition: all 0.25s ease;
 }
 
-.meter-bar {
-  width: 120px;
-  height: 8px;
-  background: #cbd5e1;
-  border-radius: 8px;
+.vi-mini-badge.completed {
+  background: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.btn-vi-tool {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-vi-tool:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+/* 主互動畫布 */
+.venue-scene-canvas {
+  position: relative;
+  flex: 1;
+  width: 100%;
   overflow: hidden;
+  min-height: 420px;
 }
 
-.meter-fill {
+.venue-scene-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, #10b981, #f59e0b);
-  transition: width 0.3s;
+  object-fit: cover;
+  z-index: 1;
+  pointer-events: none;
 }
+
+/* 背景減光景深層（消除混亂感，凸顯角色與物件） */
+.venue-contrast-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(6, 24, 38, 0.42) 0%, rgba(3, 12, 22, 0.72) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* 全域燈光覆蓋層 */
+.venue-lighting-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 15;
+  transition: background 0.5s ease;
+}
+
+.venue-lighting-overlay.seat-soft {
+  background: rgba(6, 18, 38, 0.22);
+}
+
+.venue-lighting-overlay.seat-bright {
+  background: rgba(254, 240, 138, 0.18);
+}
+
+.venue-spotlight {
+  position: absolute;
+  top: -10%;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.65;
+  transition: all 0.6s ease;
+  pointer-events: none;
+}
+
+/* 聚光燈朝向舞台 */
+.venue-spotlight.target-stage {
+  right: 6%;
+  top: 10%;
+  background: radial-gradient(circle, rgba(254, 240, 138, 0.8) 0%, rgba(251, 191, 36, 0.3) 50%, transparent 80%);
+}
+
+/* 聚光燈朝向賓客座位 */
+.venue-spotlight.target-seating {
+  left: 36%;
+  top: 25%;
+  background: radial-gradient(circle, rgba(254, 240, 138, 0.95) 0%, rgba(245, 158, 11, 0.5) 50%, transparent 80%);
+}
+
+/* 緩慢變色特效 */
+@keyframes viSlowColorShift {
+  0% { filter: hue-rotate(0deg) blur(40px); }
+  50% { filter: hue-rotate(60deg) blur(45px); }
+  100% { filter: hue-rotate(0deg) blur(40px); }
+}
+
+.venue-spotlight.effect-slow {
+  animation: viSlowColorShift 8s infinite ease-in-out;
+}
+
+/* 功能分區定位標記 */
+.zone-watermark-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(15, 23, 42, 0.7);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: inline-block;
+  margin-bottom: 8px;
+  pointer-events: none;
+}
+
+/* 紅色發光驚嘆號（❗）與呼吸脈衝動畫 */
+.exclaim-bubble {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.9), 0 3px 8px rgba(0, 0, 0, 0.5);
+  z-index: 14;
+  pointer-events: none;
+  animation: viExclaimBounce 1.8s infinite ease-in-out;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.exclaim-bubble.solved {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.2);
+  pointer-events: none;
+}
+
+@keyframes viExclaimBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-7px); }
+}
+
+/* 居民微光底座（指示可點擊互動對象） */
+.resident-glow-pod {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 76px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.55) 0%, rgba(14, 165, 233, 0.18) 50%, transparent 80%);
+  pointer-events: none;
+  z-index: 1;
+  animation: viPodPulse 2.4s infinite ease-in-out;
+}
+
+@keyframes viPodPulse {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.14); }
+}
+
+/* 可互動居民節點 */
+.resident-interactive-node {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  pointer-events: auto !important;
+}
+
+.resident-interactive-node:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.resident-interactive-node.focused {
+  filter: drop-shadow(0 0 16px rgba(250, 204, 21, 0.9));
+}
+
+.resident-interactive-node.focused .actor-nametag {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  border-color: #fde047;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+}
+
+/* 區域一：入口通道區 */
+.venue-zone-entrance {
+  position: absolute;
+  left: 2%;
+  top: 8%;
+  width: 28%;
+  height: 85%;
+  z-index: 5;
+}
+
+.entrance-actors {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 8;
+  pointer-events: auto;
+}
+
+.vi-actor-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.vi-actor-img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+
+.actor-nametag {
+  background: rgba(15, 23, 42, 0.85);
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 2px;
+}
+
+/* 入口槽位 (Slots) */
+.vi-item-slot {
+  position: absolute;
+  width: 78px;
+  height: 78px;
+  border-radius: 14px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  z-index: 4;
+}
+
+.slot-hint-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+}
+
+/* 通道槽位（阻礙走道） */
+.corridor-slot {
+  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(153, 27, 27, 0.25);
+}
+
+#slot-corridor-1 {
+  left: 20%;
+  top: 36%;
+}
+
+#slot-corridor-2 {
+  left: 55%;
+  top: 48%;
+}
+
+/* 安全槽位（不擋路） */
+.safe-slot {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(14, 116, 144, 0.2);
+}
+
+.safe-slot.highlight-ready {
+  border-color: #34d399;
+  background: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.6);
+  animation: viSlotPulse 1.5s infinite;
+  cursor: pointer;
+}
+
+@keyframes viSlotPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+#slot-side-left {
+  left: 5%;
+  top: 14%;
+}
+
+#slot-side-right {
+  left: 65%;
+  top: 16%;
+}
+
+#slot-seating-edge {
+  left: 70%;
+  top: 72%;
+}
+
+/* 可移動裝飾物品實體 */
+.vi-moveable-item {
+  position: absolute;
+  width: 82px;
+  height: 82px;
+  cursor: grab;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, top 0.3s ease, left 0.3s ease;
+  touch-action: none;
+}
+
+.vi-moveable-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+  pointer-events: none;
+}
+
+.vi-moveable-item .item-tag {
+  background: rgba(15, 23, 42, 0.85);
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: -6px;
+  pointer-events: none;
+}
+
+.vi-moveable-item:hover {
+  transform: scale(1.08);
+}
+
+.vi-moveable-item.selected {
+  transform: scale(1.15);
+  outline: 2px solid #38bdf8;
+  outline-offset: 4px;
+  border-radius: 12px;
+  filter: drop-shadow(0 0 14px #38bdf8);
+}
+
+/* 區域二：賓客座位區 */
+.venue-zone-seating {
+  position: absolute;
+  left: 31%;
+  top: 26%;
+  width: 38%;
+  height: 70%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+}
+
+.seating-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.vi-seating-sign-item {
+  width: 140px;
+  height: 70px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+  min-height: 44px;
+}
+
+.vi-seating-sign-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+}
+
+.vi-seating-sign-item:hover {
+  transform: scale(1.06);
+}
+
+.sign-switch-chip {
+  background: #f59e0b;
+  color: #1e293b;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  margin-top: -6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 座位網格 */
+.vi-seats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.vi-seat-cell {
+  background: rgba(30, 41, 59, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 6px;
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.vi-seat-cell:hover {
+  border-color: #38bdf8;
+  background: rgba(14, 116, 144, 0.35);
+}
+
+.vi-seat-cell.front-row {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(14, 116, 144, 0.25);
+}
+
+.vi-seat-cell.highlight-target {
+  border-color: #34d399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.5);
+  background: rgba(16, 185, 129, 0.3);
+}
+
+.seat-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 2px;
+  pointer-events: none;
+}
+
+.seat-occupant-wrap {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seat-occupant-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* 待入座賓客列 */
+.vi-guest-waiting-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(15, 23, 42, 0.85);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow-x: auto;
+}
+
+.guest-waiting-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.vi-guest-token {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: grab;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+.vi-guest-token img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.vi-guest-token span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.vi-guest-token:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+}
+
+.vi-guest-token.selected {
+  border-color: #facc15;
+  background: rgba(250, 204, 21, 0.25);
+  box-shadow: 0 0 10px #facc15;
+}
+
+.vi-guest-token.seated {
+  opacity: 0.45;
+  filter: grayscale(80%);
+}
+
+/* 區域三：婚禮主舞台燈光區（老水母） */
+.venue-zone-stage {
+  position: absolute;
+  left: 71%;
+  top: 6%;
+  width: 27%;
+  height: 44%;
+  z-index: 5;
+}
+
+.vi-lamp-anchor {
+  position: absolute;
+  top: 0px;
+  right: 10%;
+  width: 85px;
+  height: 115px;
+  z-index: 8;
+  animation: viLampFloat 3.5s ease-in-out infinite;
+}
+
+@keyframes viLampFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.vi-jellyfish-lamp-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px rgba(254, 240, 138, 0.7));
+}
+
+.stage-actor-dazzled,
+.stage-actor-jellyfish {
+  position: absolute;
+  bottom: 8px;
+  left: 6%;
+  z-index: 9;
+}
+
+/* 老水母刺眼晃動特效 */
+.dazzled-jellyfish {
+  animation: viDazzledWobble 2s ease-in-out infinite;
+}
+
+@keyframes viDazzledWobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg); }
+  75% { transform: rotate(4deg); }
+}
+
+.calm-jellyfish {
+  animation: viCalmJellyFloat 3.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.7)) !important;
+}
+
+@keyframes viCalmJellyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* 區域四：合照攝影區（海豚寶寶） */
+.venue-zone-photo {
+  position: absolute;
+  left: 71%;
+  bottom: 4%;
+  width: 27%;
+  height: 44%;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-staging-area {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 16px;
+  border: 2px dashed rgba(255, 255, 255, 0.22);
+}
+
+.actor-wrap-dolphin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+}
+
+.dolphin-pose-badge {
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(14, 165, 233, 0.85);
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  margin-top: -6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.vi-jump-sign-item {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 100px;
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  border-radius: 10px;
+  padding: 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 6;
+}
+
+.vi-jump-sign-item:hover {
+  transform: scale(1.05);
+  background: rgba(239, 68, 68, 0.38);
+}
+
+.jump-sign-img {
+  width: 100%;
+  height: 38px;
+  object-fit: contain;
+}
+
+.btn-remove-sign-chip {
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+.photo-deco-prop {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  opacity: 0.8;
+}
+
+/* 拍立得快照成果卡片 */
+.polaroid-photo-card {
+  position: absolute;
+  inset: 6px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 12px;
+  padding: 8px 8px 14px 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.5);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: viPolaroidFloatIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes viPolaroidFloatIn {
+  from { opacity: 0; transform: scale(0.6) rotate(-8deg); }
+  to { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.polaroid-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.polaroid-img {
+  width: 100%;
+  height: 110px;
+  object-fit: contain;
+  background: #0f172a;
+  border-radius: 6px;
+}
+
+.polaroid-caption {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* 底部互動控制列 */
+.venue-control-dock {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  padding: 10px 18px;
+  background: rgba(10, 25, 47, 0.94);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  min-height: 110px;
+  z-index: 20;
+}
+
+/* 左側居民對話區 */
+.vi-dialogue-panel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 46%;
+  background: rgba(15, 23, 42, 0.65);
+  padding: 8px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.dialogue-avatar-box {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 2px solid #38bdf8;
+  overflow: hidden;
+  background: #0f172a;
+  flex-shrink: 0;
+}
+
+.dialogue-avatar-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dialogue-speech-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dialogue-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resident-speaker-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.speech-need-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.speech-need-tag.read {
+  background: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.resident-speech-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #f1f5f9;
+}
+
+.btn-listen-needs {
+  align-self: flex-start;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+  margin-top: 2px;
+  min-height: 36px;
+}
+
+.btn-listen-needs:hover {
+  background: linear-gradient(135deg, #0369a1, #0284c7);
+}
+
+/* 右側操作與驗證區 */
+.vi-actions-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.vi-task-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ctrl-tip-pill {
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.ctrl-subtext {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.btn-ctrl-toggle-sign {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+/* 燈光控制網格 */
+.lighting-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 16px;
+}
+
+.light-control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grp-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.btn-light-opt {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 38px;
+}
+
+.btn-light-opt.active {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #fff;
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+}
+
+/* 海豚拍照流程面板 */
+.dolphin-photo-flow-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-ctrl-remove-jump {
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+}
+
+.btn-ctrl-remove-jump:hover {
+  background: rgba(239, 68, 68, 0.4);
+  color: #fff;
+}
+
+.btn-ctrl-remove-jump.done {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #34d399;
+}
+
+.dolphin-pose-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-pose-opt {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+}
+
+.btn-pose-opt.active {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.btn-confirm-pose {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+}
+
+.btn-confirm-pose:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+}
+
+.btn-confirm-pose.confirmed {
+  background: linear-gradient(135deg, #059669, #10b981);
+}
+
+/* 動作按鈕與回饋列 */
+.vi-action-buttons-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vi-feedback-toast {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fde047;
+  background: rgba(161, 98, 7, 0.35);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.btn-vi-verify {
+  margin-left: auto;
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+  transition: all 0.25s ease;
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+.btn-vi-verify:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+}
+
+.btn-vi-photo {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4) !important;
+}
+
+.btn-vi-photo:hover {
+  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.55) !important;
+}
+
+/* 成果彈窗徽章展示 */
+.vi-victory-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.vi-victory-badges-grid.four-badges {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.vi-victory-badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.vi-vbadge-icon {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+
+.vi-vbadge-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 6px;
+}
+
+.vi-vbadge-check {
+  font-size: 12px;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.2);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.victory-polaroid-frame {
+  margin: 12px auto 16px auto;
+  max-width: 220px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 8px 8px 14px 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transform: rotate(-2deg);
+}
+
+.v-polaroid-img {
+  width: 100%;
+  height: 120px;
+  object-fit: contain;
+  background: #0f172a;
+  border-radius: 6px;
+}
+
+.v-polaroid-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* 浮動成果回返按鈕 */
+.floating-return-summary-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  z-index: 50;
+}
+
+/* 響應式調整 */
+/* 座位區上方待入座朋友橫列 */
+.seating-waiting-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 10px;
+  padding: 6px 14px;
+  background: rgba(15, 23, 42, 0.55);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  min-height: 96px;
+}
+
+.seating-waiting-actor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: grab;
+  position: relative;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  user-select: none;
+}
+
+.seating-waiting-actor:hover {
+  transform: translateY(-4px) scale(1.08);
+}
+
+.seating-waiting-actor.seated-out {
+  opacity: 0.35;
+  filter: grayscale(85%);
+  pointer-events: auto;
+}
+
+.seating-waiting-actor.selected {
+  filter: drop-shadow(0 0 14px #facc15);
+  transform: scale(1.12);
+}
+
+.seating-waiting-actor .vi-actor-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* 跳躍表演區姿勢標牌手繪實體圖 */
+.vi-jump-sign-item {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 110px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.25s ease, opacity 0.3s ease;
+  z-index: 8;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.vi-jump-sign-item:hover {
+  transform: scale(1.08) rotate(-2deg);
+}
+
+.vi-jump-sign-item .jump-sign-img {
+  width: 100%;
+  height: auto;
+  max-height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+
+.sign-action-hint {
+  font-size: 11px;
+  font-weight: 800;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  margin-top: -6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+/* 拍立得照片卡平滑淡出動態 */
+.polaroid-photo-card.fade-out {
+  opacity: 0;
+  transform: scale(0.85) translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+/* 鎖定狀態樣式（任務完成後防止誤觸與再次移動） */
+.vi-moveable-item.locked {
+  cursor: default !important;
+  pointer-events: none !important;
+  filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.7)) !important;
+}
+
+.seating-waiting-actor.locked {
+  cursor: default !important;
+  pointer-events: none !important;
+  opacity: 0.55;
+}
+
+.vi-seat-cell.locked {
+  cursor: default !important;
+  pointer-events: none !important;
+  border-color: rgba(52, 211, 153, 0.5) !important;
+}
+
+.vi-seating-sign-item.locked {
+  cursor: default !important;
+  pointer-events: none !important;
+}
+
+.btn-light-opt:disabled,
+.btn-light-opt.locked {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.btn-ctrl-remove-jump:disabled,
+.btn-pose-opt:disabled,
+.btn-confirm-pose:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* 全景引導橫條 */
+.vi-task-intro-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .venue-control-dock {
+    flex-direction: column;
+    padding: 8px;
+    gap: 8px;
+  }
+  .vi-dialogue-panel {
+    max-width: 100%;
+  }
+  .venue-zone-entrance {
+    width: 32%;
+  }
+  .venue-zone-seating {
+    left: 34%;
+    width: 36%;
+  }
+  .venue-zone-stage {
+    left: 72%;
+    width: 26%;
+  }
+  .venue-zone-photo {
+    left: 72%;
+    width: 26%;
+  }
+}
+
 
 /* 關卡 5：編織愛之環 */
 .game-weave {
@@ -2957,4 +4374,12 @@ body {
 .groove-fish:hover {
   transform: scale(1.35) rotate(-15deg);
   filter: drop-shadow(0 0 14px #fde047);
+}
+
+/* 確保所有繪本浮動文字盒內所有子元素統一為純白色 */
+.floating-text-box,
+.floating-text-box *,
+.story-text,
+.story-text * {
+  color: #ffffff !important;
 }

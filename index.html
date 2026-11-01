@@ -21,7 +21,7 @@
       </div>
       <div class="header-center">
         <div class="page-counter">
-          <span id="cur-unit-display">1</span> / <span id="total-unit-display">14</span>
+          <span id="cur-unit-display">1</span> / <span id="total-unit-display">13</span>
         </div>
         <div class="progress-track">
           <div id="progress-fill" class="progress-bar"></div>
@@ -738,77 +738,407 @@
       </section>
 
       <!-- =========================================================
-           單元 10：【P18–P19 第 9 幕】互動關卡 4：波光交響（大跨頁遊戲）
+           單元 10：【P18–P19 第 9 幕】互動關卡 4：婚禮場地檢查員 (Wedding Venue Inspector)
            ========================================================= -->
       <section class="unit-screen" id="unit-10" data-unit="10" data-type="game">
-        <div class="game-spread-wrap game-stage-deco">
-          <div class="floating-text-box pos-top-left">
-            <span class="game-tag-pill">🌟 互動挑戰 4</span>
-            <p>婚禮就要開始了！居民們齊心協力，<br>一起布置最美麗的海洋舞台。</p>
-          </div>
-          <div class="floating-text-box pos-top-right">
-            <div class="meter-banner">
-              <span>共融能量：</span>
-              <div class="meter-bar"><div id="harmony-fill" class="meter-fill" style="width: 20%;"></div></div>
-              <span id="harmony-percentage">20%</span>
+        <div class="game-spread-wrap game-venue-inspector" id="venue-inspector-game">
+
+          <!-- 頂部資訊與進度橫條 -->
+          <div class="venue-header-bar">
+            <div class="venue-header-left">
+              <span class="game-tag-pill">🌟 互動挑戰 4</span>
+              <h3 class="venue-game-title">婚禮場地檢查員</h3>
+              <span class="venue-step-badge" id="vi-step-badge">自由檢查中</span>
             </div>
-            <p class="sub-hint">點擊水母、敲響貝殼、鋪設珊瑚花毯！</p>
+
+            <div class="venue-header-right">
+              <div class="vi-progress-box">
+                <span class="vi-progress-label">檢查進度：</span>
+                <span class="vi-progress-text" id="vi-progress-text">已完成 0／4 項場地檢查</span>
+                <div class="vi-badges-row">
+                  <span class="vi-mini-badge" id="vi-badge-task1" title="螃蟹阿姨：通道暢通">🦀 走道</span>
+                  <span class="vi-mini-badge" id="vi-badge-task2" title="章魚裁縫師：自由入座">🐙 座位</span>
+                  <span class="vi-mini-badge" id="vi-badge-task3" title="老水母：舒適燈光">🪼 燈光</span>
+                  <span class="vi-mini-badge" id="vi-badge-task4" title="海豚寶寶：自在合照">🐬 合照</span>
+                </div>
+              </div>
+              <button class="btn-vi-tool" id="btn-vi-hint" title="點擊取得當前提示">💡 需要一點提示</button>
+              <button class="btn-vi-tool" id="btn-vi-help" title="查看遊戲說明">❓ 遊戲說明</button>
+            </div>
           </div>
 
-          <div class="wedding-stage-interactive" id="deco-stage">
-            <div class="deco-interactive-node light-node" id="node-lights" title="點擊切換水母柔光">
-              <span>🪼 水母吊燈</span>
+          <!-- 主互動舞台畫布 -->
+          <div class="venue-scene-canvas" id="venue-scene-canvas">
+            <img src="images/bg_wedding_venue.png" alt="海底婚禮主場景" class="venue-scene-bg" id="venue-scene-bg">
+
+            <!-- 背景對比度優化與減光層（消除視覺混亂） -->
+            <div class="venue-contrast-layer"></div>
+
+            <!-- 燈光層（覆蓋全場） -->
+            <div class="venue-lighting-overlay" id="venue-lighting-overlay">
+              <div class="venue-spotlight" id="venue-spotlight"></div>
             </div>
-            <div class="deco-interactive-node music-node" id="node-music" title="點擊敲響貝殼風鈴">
-              <span>🐚 貝殼風鈴</span>
+
+            <!-- 區域一：入口走道區 (左側) -->
+            <div class="venue-zone-entrance" id="zone-entrance" data-zone="entrance">
+              <div class="zone-watermark-label">入口通道</div>
+
+              <!-- 入口居民（螃蟹阿姨與好友） -->
+              <div class="vi-actor-group entrance-actors" id="vi-entrance-actors">
+                <div class="vi-actor-wrap resident-interactive-node" id="actor-wrap-crab" tabindex="0" role="button" title="點擊聽取螃蟹阿姨的想法">
+                  <div class="exclaim-bubble" id="exclaim-crab" title="有待解決的困擾">❗</div>
+                  <div class="resident-glow-pod"></div>
+                  <img src="images/resident_crab_confused.png" alt="螃蟹阿姨" class="vi-actor-img" id="actor-img-crab">
+                  <span class="actor-nametag">螃蟹阿姨</span>
+                </div>
+                <div class="vi-actor-wrap" id="actor-wrap-crab-friend">
+                  <img src="images/resident_crab_friend.png" alt="小寄居蟹夥伴" class="vi-actor-img" id="actor-img-crab-friend">
+                  <span class="actor-nametag">阿姨的朋友</span>
+                </div>
+              </div>
+
+              <!-- 物品放置槽位 (Slots) -->
+              <div class="vi-item-slot corridor-slot" id="slot-corridor-1" data-slot="corridor-1" title="通道中央放置槽">
+                <span class="slot-hint-text">通道區 A</span>
+              </div>
+              <div class="vi-item-slot corridor-slot" id="slot-corridor-2" data-slot="corridor-2" title="通道內側放置槽">
+                <span class="slot-hint-text">通道區 B</span>
+              </div>
+
+              <!-- 走道旁安全槽位 -->
+              <div class="vi-item-slot safe-slot" id="slot-side-left" data-slot="side-left" title="入口左側花架區">
+                <span class="slot-hint-text">入口左側</span>
+              </div>
+              <div class="vi-item-slot safe-slot" id="slot-side-right" data-slot="side-right" title="入口右側迎賓區">
+                <span class="slot-hint-text">入口右側</span>
+              </div>
+              <div class="vi-item-slot safe-slot" id="slot-seating-edge" data-slot="seating-edge" title="座位區外緣備用區">
+                <span class="slot-hint-text">座位區旁</span>
+              </div>
+
+              <!-- 三件可移動裝飾物件實體 -->
+              <div class="vi-moveable-item" id="item-shell-chair" data-item="chair" tabindex="0" role="button" draggable="true" title="點選選取或拖曳移動">
+                <img src="images/deco_shell_chair.png" alt="貝殼座椅">
+                <span class="item-tag">貝殼座椅</span>
+              </div>
+              <div class="vi-moveable-item" id="item-seaweed-stand" data-item="stand" tabindex="0" role="button" draggable="true" title="點選選取或拖曳移動">
+                <img src="images/deco_seaweed_stand.png" alt="海藻花架">
+                <span class="item-tag">海藻花架</span>
+              </div>
+              <div class="vi-moveable-item" id="item-welcome-sign" data-item="sign" tabindex="0" role="button" draggable="true" title="點選選取或拖曳移動">
+                <img src="images/deco_welcome_sign.png" alt="迎賓立牌">
+                <span class="item-tag">迎賓立牌</span>
+              </div>
             </div>
-            <div class="deco-interactive-node carpet-node" id="node-carpet" title="點擊鋪設發光珊瑚沙">
-              <span>🪸 珊瑚紅毯</span>
+
+            <!-- 區域二：賓客座位區 (中央偏下) -->
+            <div class="venue-zone-seating" id="zone-seating" data-zone="seating">
+              <div class="seating-header-bar">
+                <div class="zone-watermark-label">賓客座位區</div>
+                <!-- 座位牌牌面 -->
+                <div class="vi-seating-sign-item" id="vi-seating-sign" tabindex="0" role="button" title="點選更換座位牌">
+                  <img src="images/sign_gender_split.png" alt="座位牌" id="vi-sign-img">
+                  <span class="sign-switch-chip" id="vi-sign-chip">點擊更換標牌 ↻</span>
+                </div>
+              </div>
+
+              <!-- 座位區上方待入座朋友（章魚裁縫師與海龜朋友） -->
+              <div class="seating-waiting-top" id="seating-waiting-top">
+                <div class="vi-actor-wrap resident-interactive-node seating-waiting-actor" id="guest-actor-octopus" data-guest="octopus" tabindex="0" role="button" draggable="true" title="點選或拖曳章魚裁縫師入座">
+                  <div class="exclaim-bubble" id="exclaim-octopus" title="有待解決的困擾">❗</div>
+                  <div class="resident-glow-pod"></div>
+                  <img src="images/困擾章魚.png" alt="困擾的章魚裁縫師" class="vi-actor-img" id="img-waiting-octopus">
+                  <span class="actor-nametag">章魚裁縫師</span>
+                </div>
+                <div class="vi-actor-wrap resident-interactive-node seating-waiting-actor" id="guest-actor-turtle" data-guest="octopus_friend" tabindex="0" role="button" draggable="true" title="點選或拖曳好友海龜入座">
+                  <div class="resident-glow-pod"></div>
+                  <img src="images/困擾海龜.png" alt="困擾的好友海龜" class="vi-actor-img" id="img-waiting-turtle">
+                  <span class="actor-nametag">好友海龜</span>
+                </div>
+              </div>
+
+              <!-- 6 個固定座位網格 -->
+              <div class="vi-seats-grid" id="vi-seats-grid">
+                <div class="vi-seat-cell front-row" id="seat-1" data-seat="1" data-row="front" data-col="1" tabindex="0" role="button">
+                  <span class="seat-badge">前排 1</span>
+                  <div class="seat-occupant-wrap" id="seat-occ-1"></div>
+                </div>
+                <div class="vi-seat-cell front-row" id="seat-2" data-seat="2" data-row="front" data-col="2" tabindex="0" role="button">
+                  <span class="seat-badge">前排 2</span>
+                  <div class="seat-occupant-wrap" id="seat-occ-2"></div>
+                </div>
+                <div class="vi-seat-cell front-row" id="seat-3" data-seat="3" data-row="front" data-col="3" tabindex="0" role="button">
+                  <span class="seat-badge">前排 3</span>
+                  <div class="seat-occupant-wrap" id="seat-occ-3"></div>
+                </div>
+                <div class="vi-seat-cell back-row" id="seat-4" data-seat="4" data-row="back" data-col="1" tabindex="0" role="button">
+                  <span class="seat-badge">後排 4</span>
+                  <div class="seat-occupant-wrap" id="seat-occ-4"></div>
+                </div>
+                <div class="vi-seat-cell back-row" id="seat-5" data-seat="5" data-row="back" data-col="2" tabindex="0" role="button">
+                  <span class="seat-badge">後排 5</span>
+                  <div class="seat-occupant-wrap" id="seat-occ-5"></div>
+                </div>
+                <div class="vi-seat-cell back-row" id="seat-6" data-seat="6" data-row="back" data-col="3" tabindex="0" role="button">
+                  <span class="seat-badge">後排 6</span>
+                  <div class="seat-occupant-wrap" id="seat-occ-6"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 區域三：婚禮主舞台與水母吊燈區 (右側偏上) -->
+            <div class="venue-zone-stage" id="zone-stage" data-zone="stage">
+              <div class="zone-watermark-label">舞台與燈光</div>
+
+              <!-- 水母吊燈實體 -->
+              <div class="vi-lamp-anchor" id="vi-lamp-anchor">
+                <img src="images/deco_jellyfish_lamp.png" alt="水母吊燈" class="vi-jellyfish-lamp-img" id="vi-jellyfish-lamp-img">
+                <div class="lamp-glow-cone" id="lamp-glow-cone"></div>
+              </div>
+
+              <!-- 舞台吊燈下的老水母（刺眼困擾中） -->
+              <div class="vi-actor-wrap resident-interactive-node stage-actor-jellyfish" id="actor-wrap-jellyfish" tabindex="0" role="button" title="點擊聽取老水母的想法">
+                <div class="exclaim-bubble" id="exclaim-jellyfish" title="有待解決的困擾">❗</div>
+                <div class="resident-glow-pod"></div>
+                <img src="images/resident_jellyfish_dazzled.png" alt="感到刺眼的老水母" class="vi-actor-img" id="actor-img-jellyfish">
+                <span class="actor-nametag" id="actor-nametag-jellyfish">老水母（刺眼中）</span>
+              </div>
+            </div>
+
+            <!-- 區域四：婚禮試拍合照區 (右側偏下) -->
+            <div class="venue-zone-photo" id="zone-photo" data-zone="photo">
+              <div class="zone-watermark-label">📸 合照預備區</div>
+
+              <!-- 海豚寶寶合照台 -->
+              <div class="photo-stand-pod" id="photo-stand-pod">
+                <div class="vi-actor-wrap resident-interactive-node photo-actor-dolphin" id="actor-wrap-dolphin" tabindex="0" role="button" title="點擊聽取海豚寶寶的想法">
+                  <div class="exclaim-bubble" id="exclaim-dolphin" title="有待解決的困擾">❗</div>
+                  <div class="resident-glow-pod"></div>
+                  <img src="images/resident_dolphin_hesitant.png" alt="感到困擾的海豚寶寶" class="vi-actor-img" id="actor-img-dolphin">
+                  <span class="actor-nametag">海豚寶寶</span>
+                  <span class="dolphin-current-pose-chip" id="dolphin-pose-chip">【指定跳躍】</span>
+                </div>
+
+                <!-- 地上插著的「跳躍表演區」指定姿勢牌 -->
+                <div class="vi-jump-sign-item" id="vi-jump-sign" tabindex="0" role="button" title="點擊撤下「跳躍表演區」安排">
+                  <img src="images/sign_photo_jump.png" alt="跳躍表演區標牌" class="jump-sign-img">
+                  <span class="sign-action-hint">點擊收起 ✕</span>
+                </div>
+
+                <!-- 陪同合照的好朋友裝飾 -->
+                <div class="photo-friend-companion" title="合照紀念立牌">
+                  <img src="images/deco_welcome_sign.png" alt="合照紀念立牌" class="photo-deco-prop">
+                </div>
+              </div>
+
+              <!-- 拍立得快照成果卡片（拍照完成後呈現） -->
+              <div class="polaroid-photo-card hidden" id="polaroid-photo-card">
+                <div class="polaroid-inner">
+                  <img src="images/cheer_dolphin.png" alt="試拍合照" class="polaroid-img" id="polaroid-img-preview">
+                  <div class="polaroid-caption" id="polaroid-caption">🌟 婚禮試拍：自在的我們</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /venue-scene-canvas -->
+
+          <!-- 底部互動控制列（對話面板 ＋ 當前任務操作列 ＋ 驗證按鈕） -->
+          <div class="venue-control-dock" id="venue-control-dock">
+
+            <!-- 左側：居民需求對話框 -->
+            <div class="vi-dialogue-panel" id="vi-dialogue-panel">
+              <div class="dialogue-avatar-box">
+                <img src="images/liang_base.png" alt="婚禮小導遊" id="vi-dialogue-avatar">
+              </div>
+              <div class="dialogue-speech-box">
+                <div class="dialogue-meta-row">
+                  <span class="resident-speaker-name" id="vi-speaker-name">婚禮小導遊</span>
+                  <span class="speech-need-tag" id="vi-speech-need-tag">🌟 自由探索中</span>
+                </div>
+                <p class="resident-speech-text" id="vi-speech-text">
+                  好多海洋朋友來參加婚禮，但牠們好像都遇到了一些小問題呢！請觀察場地，點擊頭頂帶有紅色驚嘆號（❗）的朋友，傾聽牠們的需求吧！
+                </p>
+                <button class="btn-listen-needs hidden" id="btn-listen-needs">聽聽他的想法 👂</button>
+              </div>
+            </div>
+
+            <!-- 右側：當前任務操作與驗證區 -->
+            <div class="vi-actions-panel" id="vi-actions-panel">
+
+              <!-- 全景探索引導面板（未選定居民時顯示） -->
+              <div class="vi-task-ctrl vi-task-intro-ctrl" id="vi-ctrl-intro">
+                <span class="ctrl-tip-pill">探索提示：</span>
+                <span class="ctrl-subtext">👈 點擊場景中頭頂帶有紅色驚嘆號（❗）的朋友，協助牠們完成場地準備！</span>
+              </div>
+
+              <!-- 任務一面板：螃蟹阿姨（入口走道） -->
+              <div class="vi-task-ctrl vi-task-crab-ctrl hidden" id="vi-ctrl-crab">
+                <span class="ctrl-tip-pill">走道調整：</span>
+                <span class="ctrl-subtext" id="task1-instruction-text">點選「貝殼座椅」或「海藻花架」，再點選綠色安全區域放置！</span>
+              </div>
+
+              <!-- 任務二面板：章魚裁縫師（座位安排） -->
+              <div class="vi-task-ctrl vi-task-octopus-ctrl hidden" id="vi-ctrl-octopus">
+                <button class="btn-ctrl-toggle-sign" id="btn-ctrl-toggle-sign">🏷️ 更換為自由入座標牌</button>
+                <span class="ctrl-subtext" id="task2-instruction-text">點選章魚或海馬再點選座位，讓牠們相鄰坐在一起！</span>
+              </div>
+
+              <!-- 任務三面板：老水母（舞台燈光） -->
+              <div class="vi-task-ctrl vi-task-jellyfish-ctrl hidden" id="vi-ctrl-jellyfish">
+                <div class="lighting-controls-grid">
+                  <div class="light-control-group">
+                    <span class="grp-label">舞台亮度：</span>
+                    <button class="btn-light-opt active" data-group="stageBrightness" data-val="bright">明亮</button>
+                    <button class="btn-light-opt" data-group="stageBrightness" data-val="soft">柔和</button>
+                  </div>
+                  <div class="light-control-group">
+                    <span class="grp-label">座位亮度：</span>
+                    <button class="btn-light-opt active" data-group="seatBrightness" data-val="bright">明亮</button>
+                    <button class="btn-light-opt" data-group="seatBrightness" data-val="soft">柔和</button>
+                  </div>
+                  <div class="light-control-group">
+                    <span class="grp-label">燈光效果：</span>
+                    <button class="btn-light-opt active" data-group="effect" data-val="stable">穩定亮光</button>
+                    <button class="btn-light-opt" data-group="effect" data-val="slow">緩慢變色</button>
+                  </div>
+                  <div class="light-control-group">
+                    <span class="grp-label">聚光方向：</span>
+                    <button class="btn-light-opt active" data-group="direction" data-val="seating">賓客座位</button>
+                    <button class="btn-light-opt" data-group="direction" data-val="stage">舞台</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 任務四面板：海豚寶寶（攝影合照） -->
+              <div class="vi-task-ctrl vi-task-dolphin-ctrl hidden" id="vi-ctrl-dolphin">
+                <div class="dolphin-photo-flow-panel">
+                  <button class="btn-ctrl-remove-jump" id="btn-ctrl-remove-jump">收起指定跳躍牌 ✕</button>
+                  <div class="dolphin-pose-buttons-row">
+                    <span class="grp-label">選擇姿勢：</span>
+                    <button class="btn-pose-opt" id="btn-pose-smile" data-pose="smile">😊 自在地微笑</button>
+                    <button class="btn-pose-opt" id="btn-pose-fin" data-pose="fin">🐬 輕輕擺動胸鰭</button>
+                  </div>
+                  <button class="btn-confirm-pose" id="btn-confirm-pose">這樣拍可以嗎？</button>
+                </div>
+              </div>
+
+              <!-- 回饋提示文字與動作按鈕組 -->
+              <div class="vi-action-buttons-wrap">
+                <div class="vi-feedback-toast hidden" id="vi-feedback-toast">
+                  <span class="fb-icon" id="vi-fb-icon">💡</span>
+                  <span class="fb-msg" id="vi-fb-msg">請先點擊居民聽聽想法喔！</span>
+                </div>
+                <button class="btn-vi-verify" id="btn-vi-verify">邀請朋友試試看 ➔</button>
+                <button class="btn-vi-verify btn-vi-photo hidden" id="btn-vi-take-photo">拍下合照 📸</button>
+              </div>
+
+            </div><!-- /vi-actions-panel -->
+
+          </div><!-- /venue-control-dock -->
+
+          <!-- 彈窗 1：開場導引視窗 -->
+          <div class="card-modal" id="venue-intro-modal">
+            <div class="intro-dialog-card">
+              <div class="intro-card-inner">
+                <div class="intro-icon-bubble">💒</div>
+                <span class="game-tag-pill">🌟 互動挑戰 4</span>
+                <h3 class="intro-invitation-title">婚禮場地檢查員</h3>
+                <div class="intro-invitation-text">
+                  <p>婚禮快開始了！不過，有些朋友遇到了一點小困難。</p>
+                  <p>請觀察場地、聽聽大家的想法，讓每位朋友都能開心參加！</p>
+                </div>
+                <button class="btn-start-invitation-game" id="btn-start-venue-inspection">開始檢查 ➔</button>
+              </div>
             </div>
           </div>
 
-          <!-- 伴舞小魚節奏樂團 -->
-          <div class="groove-fish-troop" id="groove-fish-troop">
-            <span class="groove-fish f1" title="小丑魚隨節奏搖擺">🐠</span>
-            <span class="groove-fish f2" title="小海龜開心拍手">🐢</span>
-            <span class="groove-fish f3" title="小魟魚輕快滑行">🐟</span>
+          <!-- 彈窗 2：遊戲說明視窗（純操作指引，不劇透答案） -->
+          <div class="card-modal hidden" id="venue-help-modal">
+            <div class="modal-card-box">
+              <div class="help-header">
+                <span class="help-icon">📋</span>
+                <h3 class="help-title">婚禮場地檢查指南</h3>
+              </div>
+              <div class="help-content-scroll">
+                <p><strong>🎮 遊戲操作四步驟：</strong></p>
+                <ol class="help-step-list">
+                  <li><strong>👀 尋找驚嘆號</strong>：觀察婚禮場地，頭頂帶有<strong>紅色驚嘆號（❗）</strong>的朋友正面臨困擾，點選他們即可聽取想法。</li>
+                  <li><strong>🛠️ 自由調整場地</strong>：
+                    <br>• 移動物品／安排座位：點選目標再點選放置位置（亦支援拖曳）。
+                    <br>• 切換標牌／微調燈光／自選拍照姿勢：點選操作按鈕即可即時預覽。
+                  </li>
+                  <li><strong>🤝 邀請確認</strong>：調整完畢後點擊「<strong>邀請朋友試試看</strong>」，朋友會親自告訴你他的感受。</li>
+                  <li><strong>🔄 消除所有驚嘆號</strong>：不用按照固定順序，隨時可以依據朋友的回饋微調，直到 4 位朋友頭上的驚嘆號全部消除就通關囉！</li>
+                </ol>
+                <p><strong>💡 貼心提醒：</strong></p>
+                <p>婚禮沒有唯一的標準答案，只要用心傾聽、滿足大家的實際需求就是最棒的設計！</p>
+              </div>
+              <div class="help-actions">
+                <button class="btn-close-modal" id="btn-close-venue-help">我知道了，繼續檢查 ✓</button>
+              </div>
+            </div>
           </div>
 
-          <div class="stage-celebration-toast hidden" id="toast-wedding-ready">
-            🎉 波光共融能量達 100%！號角響起，婚禮正式開始！
+          <!-- 彈窗 3：成果結算面板（四項通關） -->
+          <div class="card-modal hidden" id="venue-victory-modal">
+            <div class="modal-card-box victory-card-box">
+              <div class="victory-header-badge">🎉 檢查完成 🎉</div>
+              <h3 class="victory-title">每位朋友，都有參與的位置！</h3>
+              <p class="victory-desc">你聽見了每位朋友的想法，尊重彼此的意願與需要。這場婚禮，因為大家的自在參與變得更加溫暖美好！</p>
+
+              <!-- 四項檢查成果展示 -->
+              <div class="vi-victory-badges-grid four-badges">
+                <div class="vi-victory-badge-item">
+                  <span class="vi-vbadge-icon">🦀</span>
+                  <span class="vi-vbadge-title">走道暢通</span>
+                  <div class="vi-vbadge-check">已認證 ✓</div>
+                </div>
+                <div class="vi-victory-badge-item">
+                  <span class="vi-vbadge-icon">🐙</span>
+                  <span class="vi-vbadge-title">自由入座</span>
+                  <div class="vi-vbadge-check">已認證 ✓</div>
+                </div>
+                <div class="vi-victory-badge-item">
+                  <span class="vi-vbadge-icon">🪼</span>
+                  <span class="vi-vbadge-title">舒適燈光</span>
+                  <div class="vi-vbadge-check">已認證 ✓</div>
+                </div>
+                <div class="vi-victory-badge-item">
+                  <span class="vi-vbadge-icon">🐬</span>
+                  <span class="vi-vbadge-title">自在合照</span>
+                  <div class="vi-vbadge-check">已認證 ✓</div>
+                </div>
+              </div>
+
+              <!-- 成果拍立得試拍照展示框 -->
+              <div class="victory-polaroid-frame" id="vi-victory-photo-frame">
+                <div class="polaroid-wrapper">
+                  <img src="images/cheer_dolphin.png" alt="婚禮試拍合照" class="v-polaroid-img" id="v-polaroid-img">
+                  <div class="v-polaroid-label" id="v-polaroid-label">🌟 婚禮試拍：自在合照紀念</div>
+                </div>
+              </div>
+
+              <!-- 成果操作按鈕組 -->
+              <div class="victory-actions-group">
+                <button class="btn-action-secondary" id="btn-vi-view-venue">👀 看看我的婚禮場地</button>
+                <button class="btn-action-secondary" id="btn-vi-replay">🔄 再玩一次</button>
+                <button class="btn-action-primary" id="btn-vi-continue-story">繼續故事 ➔</button>
+              </div>
+            </div>
           </div>
-        </div>
+
+          <!-- 浮水印返回成果按鈕（瀏覽場地時出現） -->
+          <button class="floating-return-summary-btn hidden" id="btn-vi-return-summary">
+            📋 查看檢查成果
+          </button>
+
+        </div><!-- /game-venue-inspector -->
       </section>
 
       <!-- =========================================================
-           單元 11：【P20–P21 第 10 幕】互動關卡 5：愛之環的承諾（大跨頁遊戲）
+           單元 11：【P22–P23 第 10 幕】彩虹泡泡婚禮盛況（大跨頁）
            ========================================================= -->
-      <section class="unit-screen" id="unit-11" data-unit="11" data-type="game">
-        <div class="game-spread-wrap game-weave">
-          <div class="floating-text-box pos-top-left">
-            <span class="game-tag-pill">🌟 互動挑戰 5</span>
-            <p>優美的音樂響起，亮亮與閃閃來到舞台中央。<br><strong>「請為彼此許下一生的承諾。」</strong></p>
-          </div>
-          <div class="floating-text-box pos-top-right">
-            <p class="sub-hint">用滑鼠或手指在發光的星點間連線，編織愛之環！</p>
-            <div id="weave-status" class="weave-badge">請滑動連接第 1 個星點（傾聽）...</div>
-          </div>
-
-          <div class="weave-board-wrap">
-            <canvas id="weave-canvas" width="800" height="380"></canvas>
-            <div class="vows-overlay" id="vows-container">
-              <div class="vow-tag" id="vow-1">🌿【傾聽】「不論海流多急，我都願意靜靜聽你說。」</div>
-              <div class="vow-tag" id="vow-2">⭐【尊重】「我愛你原本的樣子，不用為任何人改變。」</div>
-              <div class="vow-tag" id="vow-3">💖【相伴】「在每一段海底道路上，我們並肩同行。」</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- =========================================================
-           單元 12：【P22–P23 第 11 幕】彩虹泡泡婚禮盛況（大跨頁）
-           ========================================================= -->
-      <section class="unit-screen" id="unit-12" data-unit="12" data-type="spread">
+      <section class="unit-screen" id="unit-11" data-unit="11" data-type="spread">
         <div class="screen-fullbleed" id="fireworks-canvas-zone">
           <img src="images/spread11.png" alt="彩虹泡泡婚禮盛況" class="fullbleed-bg-img">
           <div class="floating-text-box pos-top-left" data-narrate="砰！珊瑚間噴出絢麗的彩虹泡泡煙火。小海兔波波好奇地問：什麼是真正的愛呢？">
@@ -829,9 +1159,9 @@
       </section>
 
       <!-- =========================================================
-           單元 13：【P24–P25 第 12 幕】小海兔星空手帳與證書（大跨頁遊戲）
+           單元 12：【P24–P25 第 11 幕】小海兔星空手帳與證書（大跨頁遊戲）
            ========================================================= -->
-      <section class="unit-screen" id="unit-13" data-unit="13" data-type="game">
+      <section class="unit-screen" id="unit-12" data-unit="12" data-type="game">
         <div class="game-spread-wrap game-reflection">
           <div class="reflection-book-grid">
             <!-- 左頁：手帳心得與同理測驗 -->
@@ -886,9 +1216,9 @@
       </section>
 
       <!-- =========================================================
-           單元 14：【P26 封底】單頁滿版 16:9
+           單元 13：【P26 封底】單頁滿版 16:9
            ========================================================= -->
-      <section class="unit-screen" id="unit-14" data-unit="14" data-type="single">
+      <section class="unit-screen" id="unit-13" data-unit="13" data-type="single">
         <div class="screen-fullbleed back-cover-screen">
           <img src="images/back_cover.png" alt="海蛞蝓愛海蛞蝓 封底" class="fullbleed-bg-img">
           <div class="back-cover-quote-wrap floating-text-box" data-narrate="願你也能成為一片溫柔的海，讓身邊每一個獨特的朋友，都能自在游動。">
@@ -923,11 +1253,10 @@
           <option value="7">P12–P13 第 6 幕：愛的形狀與歡呼（單頁對開）</option>
           <option value="8">P14–P15 第 7 幕：【關卡 3】波光城婚禮造型設計師</option>
           <option value="9">P16–P17 第 8 幕：愛之環的承諾（單頁對開）</option>
-          <option value="10">P18–P19 第 9 幕：【關卡 4】波光交響布置</option>
-          <option value="11">P20–P21 第 10 幕：【關卡 5】愛之環誓約連線</option>
-          <option value="12">P22–P23 第 11 幕：彩虹泡泡婚禮盛況（大跨頁）</option>
-          <option value="13">P24–P25 第 12 幕：【關卡 6】星空手帳與證書</option>
-          <option value="14">P26 封底</option>
+          <option value="10">P18–P19 第 9 幕：【關卡 4】婚禮場地檢查員</option>
+          <option value="11">P22–P23 第 10 幕：彩虹泡泡婚禮盛況（大跨頁）</option>
+          <option value="12">P24–P25 第 11 幕：【關卡 5】星空手帳與證書</option>
+          <option value="13">P26 封底</option>
         </select>
       </div>
 
@@ -938,6 +1267,6 @@
 
   </div>
 
-  <script src="app.js?v=20261030c"></script>
+  <script src="app.js?v=20261031_l4"></script>
 </body>
 </html>
