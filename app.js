@@ -8,6 +8,18 @@ window.GAS_EMAIL_ENDPOINT = "https://script.google.com/macros/s/AKfycbzKq1mWH7eW
 
 document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
+  // 預先載入 6 款水彩印章 Base64 Image 物件 (Zero-Taint)
+  // ==========================================
+  window.STAMP_CACHE = {};
+  if (window.STAMPS_BASE64) {
+    for (const [name, b64] of Object.entries(window.STAMPS_BASE64)) {
+      const img = new Image();
+      img.src = b64;
+      window.STAMP_CACHE[name] = img;
+    }
+  }
+
+  // ==========================================
   // 1. 全域狀態管理 (State)
   // ==========================================
   const state = {
@@ -3179,10 +3191,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     btnDownloadCert.addEventListener("click", () => {
-      const link = document.createElement("a");
-      link.download = `波光城榮譽證書_${state.studentCode}.png`;
-      link.href = certCanvas.toDataURL("image/png");
-      link.click();
+      try {
+        const link = document.createElement("a");
+        link.download = `波光城榮譽證書_${state.studentCode || "海洋探索家"}.png`;
+        link.href = certCanvas.toDataURL("image/png");
+        link.click();
+      } catch (e) {
+        console.error("下載證書失敗:", e);
+        alert("匯出證書時遇到問題，請嘗試使用螢幕截圖保存證書！");
+      }
     });
 
     const btnSendEmailCert = document.getElementById("btn-send-email-cert");
@@ -3322,30 +3339,44 @@ document.addEventListener("DOMContentLoaded", () => {
       const cx = startX + i * spacing;
       const imgPath = STAMP_MAP[stampName];
 
-      // 嘗試從 DOM 中直接取得已載入的 img 元素
-      const domImg = document.querySelector(`.stamp-card-item[data-stamp="${stampName}"] img.stamp-sticker-img`);
+      // 優先使用安全 Base64 快取 Image (零 Taint Canvas，離線與線上 100% 成功導出)
+      let stampImg = null;
+      if (window.STAMP_CACHE && window.STAMP_CACHE[stampName]) {
+        stampImg = window.STAMP_CACHE[stampName];
+      } else if (window.STAMPS_BASE64 && window.STAMPS_BASE64[stampName]) {
+        stampImg = new Image();
+        stampImg.src = window.STAMPS_BASE64[stampName];
+        if (!window.STAMP_CACHE) window.STAMP_CACHE = {};
+        window.STAMP_CACHE[stampName] = stampImg;
+      }
 
-      if (domImg && domImg.complete && domImg.naturalWidth > 0) {
-        // 直接在 Canvas 上繪製真實貼紙圖檔 (直徑 100px)
+      if (stampImg && stampImg.complete && stampImg.naturalWidth > 0) {
         ctx.save();
         ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
         ctx.shadowBlur = 10;
         ctx.shadowOffsetY = 4;
-        ctx.drawImage(domImg, cx - 50, stampY - 50, 100, 100);
+        ctx.drawImage(stampImg, cx - 50, stampY - 50, 100, 100);
         ctx.restore();
-      } else if (imgPath) {
-        // 建立 Image 物件非同步補畫
-        const tempImg = new Image();
-        tempImg.crossOrigin = "anonymous";
-        tempImg.src = imgPath;
-        tempImg.onload = () => {
+      } else if (stampImg) {
+        stampImg.onload = () => {
           ctx.save();
           ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
           ctx.shadowBlur = 10;
           ctx.shadowOffsetY = 4;
-          ctx.drawImage(tempImg, cx - 50, stampY - 50, 100, 100);
+          ctx.drawImage(stampImg, cx - 50, stampY - 50, 100, 100);
           ctx.restore();
         };
+      } else {
+        // 保底：若無 Base64 則取 DOM 元素
+        const domImg = document.querySelector(`.stamp-card-item[data-stamp="${stampName}"] img.stamp-sticker-img`);
+        if (domImg && domImg.complete && domImg.naturalWidth > 0) {
+          ctx.save();
+          ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 4;
+          ctx.drawImage(domImg, cx - 50, stampY - 50, 100, 100);
+          ctx.restore();
+        }
       }
 
       // 下方印章標籤文字
