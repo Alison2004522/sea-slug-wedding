@@ -3102,24 +3102,40 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    const stampBtns = document.querySelectorAll(".stamp-btn");
+    // 6 款波光城祝福印章名稱與圖檔對應表
+    const STAMP_IMAGE_MAP = {
+      "勇敢做自己": "images/stamps/stamp_brave.png",
+      "多樣的愛": "images/stamps/stamp_love.png",
+      "溫柔傾聽": "images/stamps/stamp_listen.png",
+      "打破標籤": "images/stamps/stamp_break_tags.png",
+      "互相扶持": "images/stamps/stamp_support.png",
+      "平等尊重": "images/stamps/stamp_respect.png"
+    };
+
+    const stampCardItems = document.querySelectorAll(".stamp-card-item");
     const stampCountDisplay = document.getElementById("stamp-selected-count");
-    stampBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const stamp = btn.dataset.stamp;
+
+    stampCardItems.forEach(card => {
+      card.addEventListener("click", () => {
+        const stamp = card.dataset.stamp;
+        const badge = card.querySelector(".stamp-selected-badge");
+
         if (state.selectedStamps.has(stamp)) {
           state.selectedStamps.delete(stamp);
-          btn.classList.remove("selected");
+          card.classList.remove("selected");
+          if (badge) badge.classList.add("hidden");
+          playTone(520);
         } else {
           if (state.selectedStamps.size >= 3) {
-            alert("最多挑選 3 枚印章喔！可以點擊取消其他印章進行更換。");
+            alert("最多挑選 3 枚祝福印章喔！可以點擊已選取的印章取消更換。");
             return;
           }
           state.selectedStamps.add(stamp);
-          btn.classList.add("selected");
-          playTone(750);
+          card.classList.add("selected");
+          if (badge) badge.classList.remove("hidden");
+          playTone(850);
         }
-        stampCountDisplay.textContent = state.selectedStamps.size;
+        if (stampCountDisplay) stampCountDisplay.textContent = state.selectedStamps.size;
       });
     });
 
@@ -3286,24 +3302,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ctx.fillStyle = "#64748b";
     ctx.font = "bold 16px 'Noto Sans TC'";
-    ctx.fillText("—— 個人專屬守護印章 ——", canvas.width / 2, 305);
+    ctx.fillText("—— 波光城專屬祝福印章 ——", canvas.width / 2, 298);
 
-    const startX = canvas.width / 2 - ((stamps.length - 1) * 85);
-    stamps.forEach((stamp, i) => {
-      const cx = startX + i * 170;
-      const cy = 370;
+    const STAMP_MAP = {
+      "勇敢做自己": "images/stamps/stamp_brave.png",
+      "多樣的愛": "images/stamps/stamp_love.png",
+      "溫柔傾聽": "images/stamps/stamp_listen.png",
+      "打破標籤": "images/stamps/stamp_break_tags.png",
+      "互相扶持": "images/stamps/stamp_support.png",
+      "平等尊重": "images/stamps/stamp_respect.png"
+    };
 
-      ctx.beginPath();
-      ctx.arc(cx, cy, 48, 0, Math.PI * 2);
-      ctx.strokeStyle = "#f43f5e";
-      ctx.lineWidth = 3;
-      ctx.setLineDash([4, 3]);
-      ctx.stroke();
-      ctx.setLineDash([]);
+    const stampCount = stamps.length;
+    const spacing = 190;
+    const startX = canvas.width / 2 - ((stampCount - 1) * (spacing / 2));
+    const stampY = 360;
 
-      ctx.fillStyle = "#f43f5e";
+    stamps.forEach((stampName, i) => {
+      const cx = startX + i * spacing;
+      const imgPath = STAMP_MAP[stampName];
+
+      // 嘗試從 DOM 中直接取得已載入的 img 元素
+      const domImg = document.querySelector(`.stamp-card-item[data-stamp="${stampName}"] img.stamp-sticker-img`);
+
+      if (domImg && domImg.complete && domImg.naturalWidth > 0) {
+        // 直接在 Canvas 上繪製真實貼紙圖檔 (直徑 100px)
+        ctx.save();
+        ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 4;
+        ctx.drawImage(domImg, cx - 50, stampY - 50, 100, 100);
+        ctx.restore();
+      } else if (imgPath) {
+        // 建立 Image 物件非同步補畫
+        const tempImg = new Image();
+        tempImg.crossOrigin = "anonymous";
+        tempImg.src = imgPath;
+        tempImg.onload = () => {
+          ctx.save();
+          ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetY = 4;
+          ctx.drawImage(tempImg, cx - 50, stampY - 50, 100, 100);
+          ctx.restore();
+        };
+      }
+
+      // 下方印章標籤文字
+      ctx.fillStyle = "#334155";
       ctx.font = "bold 15px 'Noto Sans TC'";
-      ctx.fillText(stamp, cx, cy + 5);
+      ctx.fillText(stampName, cx, stampY + 68);
     });
 
     ctx.fillStyle = "#94a3b8";

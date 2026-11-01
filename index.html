@@ -1257,16 +1257,63 @@
               </div>
             </div>
 
-            <!-- 右頁：挑選印章與榮譽證書 -->
+            <!-- 右頁：挑選波光城祝福印章與榮譽證書 -->
             <div class="reflection-page page-right">
-              <h3>挑選 3 枚守護印章（已選 <span id="stamp-selected-count">0</span> / 3）：</h3>
-              <div class="stamp-selection-grid">
-                <button class="stamp-btn" data-stamp="勇敢做自己">🌟 勇敢做自己</button>
-                <button class="stamp-btn" data-stamp="多樣的愛">🌊 多樣的愛</button>
-                <button class="stamp-btn" data-stamp="溫柔傾聽">👂 溫柔傾聽</button>
-                <button class="stamp-btn" data-stamp="打破標籤">🚫 打破標籤</button>
-                <button class="stamp-btn" data-stamp="互相扶持">🤝 互相扶持</button>
-                <button class="stamp-btn" data-stamp="平等尊重">⚖️ 平等尊重</button>
+              <div class="stamp-section-header">
+                <h3 class="stamp-section-title">挑選三枚你喜歡的祝福印章，留下波光城的回憶吧！</h3>
+                <span class="stamp-counter-badge">已選取 <strong id="stamp-selected-count">0</strong> / 3 枚</span>
+              </div>
+
+              <!-- 6 款水彩貼紙式印章展示櫃 (3x2 網格) -->
+              <div class="stamp-selection-grid" id="stamp-selection-grid">
+                <!-- 01 勇敢做自己 -->
+                <div class="stamp-card-item" data-stamp="勇敢做自己" data-img="images/stamps/stamp_brave.png" role="button" tabindex="0" title="點擊選取：勇敢做自己">
+                  <div class="stamp-img-wrap">
+                    <img src="images/stamps/stamp_brave.png" alt="勇敢做自己印章" class="stamp-sticker-img" id="stamp-img-brave">
+                    <div class="stamp-selected-badge hidden">✓</div>
+                  </div>
+                  <span class="stamp-name-tag">勇敢做自己</span>
+                </div>
+                <!-- 02 多樣的愛 -->
+                <div class="stamp-card-item" data-stamp="多樣的愛" data-img="images/stamps/stamp_love.png" role="button" tabindex="0" title="點擊選取：多樣的愛">
+                  <div class="stamp-img-wrap">
+                    <img src="images/stamps/stamp_love.png" alt="多樣的愛印章" class="stamp-sticker-img" id="stamp-img-love">
+                    <div class="stamp-selected-badge hidden">✓</div>
+                  </div>
+                  <span class="stamp-name-tag">多樣的愛</span>
+                </div>
+                <!-- 03 溫柔傾聽 -->
+                <div class="stamp-card-item" data-stamp="溫柔傾聽" data-img="images/stamps/stamp_listen.png" role="button" tabindex="0" title="點擊選取：溫柔傾聽">
+                  <div class="stamp-img-wrap">
+                    <img src="images/stamps/stamp_listen.png" alt="溫柔傾聽印章" class="stamp-sticker-img" id="stamp-img-listen">
+                    <div class="stamp-selected-badge hidden">✓</div>
+                  </div>
+                  <span class="stamp-name-tag">溫柔傾聽</span>
+                </div>
+                <!-- 04 打破標籤 -->
+                <div class="stamp-card-item" data-stamp="打破標籤" data-img="images/stamps/stamp_break_tags.png" role="button" tabindex="0" title="點擊選取：打破標籤">
+                  <div class="stamp-img-wrap">
+                    <img src="images/stamps/stamp_break_tags.png" alt="打破標籤印章" class="stamp-sticker-img" id="stamp-img-break-tags">
+                    <div class="stamp-selected-badge hidden">✓</div>
+                  </div>
+                  <span class="stamp-name-tag">打破標籤</span>
+                </div>
+                <!-- 05 互相扶持 -->
+                <div class="stamp-card-item" data-stamp="互相扶持" data-img="images/stamps/stamp_support.png" role="button" tabindex="0" title="點擊選取：互相扶持">
+                  <div class="stamp-img-wrap">
+                    <img src="images/stamps/stamp_support.png" alt="互相扶持印章" class="stamp-sticker-img" id="stamp-img-support">
+                    <div class="stamp-selected-badge hidden">✓</div>
+                  </div>
+                  <span class="stamp-name-tag">互相扶持</span>
+                </div>
+                <!-- 06 平等尊重 -->
+                <div class="stamp-card-item" data-stamp="平等尊重" data-img="images/stamps/stamp_respect.png" role="button" tabindex="0" title="點擊選取：平等尊重">
+                  <div class="stamp-img-wrap">
+                    <img src="images/stamps/stamp_respect.png" alt="平等尊重印章" class="stamp-sticker-img" id="stamp-img-respect">
+                    <div class="stamp-selected-badge hidden">✓</div>
+                  </div>
+                  <span class="stamp-name-tag">平等尊重</span>
+                </div>
               </div>
 
               <div class="cert-input-section">
@@ -1278,7 +1325,7 @@
                   <label for="student-email">電子信箱（選填，將證書寄給您）：</label>
                   <input type="email" id="student-email" placeholder="例如：ocean@example.com">
                 </div>
-                <button class="btn-generate-cert" id="btn-create-cert">🎓 生成榮譽證書</button>
+                <button class="btn-generate-cert" id="btn-create-cert">🎓 蓋上我的祝福，生成證書</button>
               </div>
             </div>
           </div>
