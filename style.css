@@ -359,25 +359,29 @@ body {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 52px;
-  /* 多重漸層：中央裝訂深縫 (1px) ＋ 兩側雙向擴散紙張內陷陰影 */
+  width: 68px;
+  /* 多重精裝書裝訂書壓漸層：中央裝訂縫 (2px 深黑) ＋ 左右微曲折高光微光 ＋ 寬幅雙向漫射凹陷陰影 */
   background: 
-    linear-gradient(to right, transparent calc(50% - 1px), rgba(0, 0, 0, 0.85) 50%, transparent calc(50% + 1px)),
+    /* 1. 中央深槽縫 2px */
+    linear-gradient(to right, transparent calc(50% - 1.5px), rgba(0, 0, 0, 0.95) 50%, transparent calc(50% + 1.5px)),
+    /* 2. 槽線緊鄰兩側紙張微拱高光反光 */
+    linear-gradient(to right, transparent calc(50% - 3px), rgba(255, 255, 255, 0.22) calc(50% - 1.5px), transparent 50%, rgba(255, 255, 255, 0.22) calc(50% + 1.5px), transparent calc(50% + 3px)),
+    /* 3. 寬幅多層紙張凹陷陰影 */
     linear-gradient(
       to right,
       rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 0.1) 18%,
-      rgba(0, 0, 0, 0.32) 36%,
-      rgba(0, 0, 0, 0.65) 47%,
-      rgba(0, 0, 0, 0.88) 50%,
-      rgba(0, 0, 0, 0.65) 53%,
-      rgba(0, 0, 0, 0.32) 64%,
-      rgba(0, 0, 0, 0.1) 82%,
+      rgba(0, 0, 0, 0.08) 15%,
+      rgba(0, 0, 0, 0.28) 32%,
+      rgba(0, 0, 0, 0.62) 44%,
+      rgba(0, 0, 0, 0.92) 50%,
+      rgba(0, 0, 0, 0.62) 56%,
+      rgba(0, 0, 0, 0.28) 68%,
+      rgba(0, 0, 0, 0.08) 85%,
       rgba(0, 0, 0, 0) 100%
     );
   pointer-events: none;
   z-index: 25;
-  box-shadow: 0 0 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.45);
 }
 
 /* 左頁靠近中縫處的紙張弧度立體漸層 */
@@ -4382,4 +4386,25 @@ body {
 .story-text,
 .story-text * {
   color: #ffffff !important;
+}
+
+/* 波波手帳頭像與頂部排版 */
+.reflection-header-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bobo-diary-thumbnail {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15));
+}
+
+.bobo-diary-intro {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
 }

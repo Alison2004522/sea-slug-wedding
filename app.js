@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   const state = {
     currentUnit: 1,
-    totalUnits: 13,
+    totalUnits: 15,
     audioEnabled: false,
     isNarrating: false,
     isFlipping: false,
@@ -435,8 +435,8 @@ document.addEventListener("DOMContentLoaded", () => {
         venueInspectorResetIntro();
       }
     }
-    if (unitNum === 11) initUnit12Fireworks();
-    if (unitNum === 12) initLevel6Reflection();
+    if (unitNum === 12) initUnit12Fireworks();
+    if (unitNum === 14) initLevel6Reflection();
   }
 
   // ------------------------------------------
@@ -1065,7 +1065,7 @@ document.addEventListener("DOMContentLoaded", () => {
           { key: "B", text: "B. 「由我們幫他們決定誰要扮演哪個角色。」", correct: false },
           { key: "C", text: "C. 「可以先問問亮亮與閃閃想怎麼稱呼自己，不需要替他們決定。」", correct: true }
         ],
-        correctFeedback: "沒錯！每段關係都值得被尊重，我們可以先了解當事人的想法，而不是替他們設定角色。",
+        correctFeedback: "與其替亮亮和閃閃決定，不如先聽聽牠們的想法。",
         retryFeedback: "想一想：一場婚禮最重要的是固定的角色，還是彼此的心意與選擇呢？"
       }
     ];
@@ -2036,7 +2036,7 @@ document.addEventListener("DOMContentLoaded", () => {
         name: "海豚寶寶",
         avatarConfused: "images/resident_dolphin_hesitant.png",
         avatarHappy: "images/resident_dolphin_calm.png",
-        initial: "「合照準備好了！先聽聽海豚寶寶的想法，再一起留下舒服、自在的照片吧。」",
+        initial: "「我想和朋友一起拍照，可是今天不想跳躍，想安靜地待在朋友旁邊。」",
         detail: "「我很想一起拍照，可是今天想安靜地待在朋友旁邊，不想表演跳躍。可以幫我調整一下嗎？」",
         solved: "「太開心了！不用勉強表演跳躍，可以照自己喜歡的樣子拍照，真是最自在的合照！」",
         hint: "先撤下地上的『跳躍表演區』標牌，替海豚寶寶選擇一個喜歡的姿勢，再點擊確認！"
@@ -3209,7 +3209,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ctx.fillStyle = "#94a3b8";
     ctx.font = "14px 'Noto Sans TC'";
-    ctx.fillText("波光城小學・海蛞蝓老師 亮亮 & 閃閃 敬頒", canvas.width / 2, 480);
+    ctx.fillText("亮亮、閃閃與波光城的朋友們 敬贈", canvas.width / 2, 480);
     ctx.fillText("「真正的愛，是讓彼此都能發出最自在、最獨特的光。」", canvas.width / 2, 510);
   }
 
