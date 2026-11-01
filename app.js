@@ -1,3 +1,6 @@
+// [Google Apps Script 郵件發送端點配置] 如已部署 Web App 請在此填入網址
+window.GAS_EMAIL_ENDPOINT = "";
+
 /**
  * 海蛞蝓愛海蛞蝓：波光城最閃亮的婚禮
  * 全新 14 單元雙頁滿版／大跨頁互動繪本引擎
@@ -3129,7 +3132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCreateCert.addEventListener("click", () => {
       const codeInput = document.getElementById("student-code").value.trim();
       if (!codeInput) {
-        alert("請輸入您的班級座號（例如：50101）以生成證書！");
+        alert("請輸入您想在證書上留下的稱呼（可填暱稱或代號）喔！");
         return;
       }
       if (state.selectedStamps.size === 0) {
@@ -3137,10 +3140,22 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      const emailEl = document.getElementById("student-email");
+      state.studentEmail = emailEl ? emailEl.value.trim() : "";
       state.studentCode = codeInput;
+
       drawCertificate(certCanvas, state.studentCode, Array.from(state.selectedStamps));
       certModal.classList.remove("hidden");
       playTone(880);
+
+      // 重設寄送狀態
+      const emailStatusMsg = document.getElementById("email-send-status");
+      const btnSendEmail = document.getElementById("btn-send-email-cert");
+      if (emailStatusMsg) emailStatusMsg.classList.add("hidden");
+      if (btnSendEmail) {
+        btnSendEmail.disabled = false;
+        btnSendEmail.textContent = "✉️ 寄送證書至信箱";
+      }
     });
 
     btnCloseCert.addEventListener("click", () => {
@@ -3149,10 +3164,94 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnDownloadCert.addEventListener("click", () => {
       const link = document.createElement("a");
-      link.download = `波光城友善公民證書_${state.studentCode}.png`;
+      link.download = `波光城榮譽證書_${state.studentCode}.png`;
       link.href = certCanvas.toDataURL("image/png");
       link.click();
     });
+
+    const btnSendEmailCert = document.getElementById("btn-send-email-cert");
+    const emailStatusMsg = document.getElementById("email-send-status");
+
+    if (btnSendEmailCert) {
+      btnSendEmailCert.addEventListener("click", async () => {
+        const emailInputEl = document.getElementById("student-email");
+        let targetEmail = (emailInputEl ? emailInputEl.value.trim() : "") || state.studentEmail;
+
+        if (!targetEmail) {
+          const promptEmail = prompt("請輸入您的電子信箱（Email），將榮譽證書寄送給您：");
+          if (!promptEmail) return;
+          targetEmail = promptEmail.trim();
+          if (emailInputEl) emailInputEl.value = targetEmail;
+          state.studentEmail = targetEmail;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(targetEmail)) {
+          alert("請輸入正確格式的電子信箱（例如：user@example.com）！");
+          return;
+        }
+
+        btnSendEmailCert.disabled = true;
+        btnSendEmailCert.textContent = "⏳ 正在寄送證書...";
+        if (emailStatusMsg) {
+          emailStatusMsg.classList.remove("hidden", "error", "success");
+          emailStatusMsg.classList.add("sending");
+          emailStatusMsg.textContent = `正在將專屬榮譽證書寄送至 ${targetEmail} ...`;
+        }
+
+        try {
+          const imgBase64 = certCanvas.toDataURL("image/png");
+
+          if (!window.GAS_EMAIL_ENDPOINT || window.GAS_EMAIL_ENDPOINT === "") {
+            // 未綁定 GAS 端點時的友善引導與保底下載
+            setTimeout(() => {
+              btnSendEmailCert.disabled = false;
+              btnSendEmailCert.textContent = "✉️ 寄送證書至信箱";
+              if (emailStatusMsg) {
+                emailStatusMsg.classList.remove("sending");
+                emailStatusMsg.classList.add("success");
+                emailStatusMsg.innerHTML = "💡 證書已先為您自動下載！<br><small>（若要啟用自動寄信功能，請依教學設定 Google Apps Script Web App 端點）</small>";
+              }
+              const link = document.createElement("a");
+              link.download = `波光城榮譽證書_${state.studentCode}.png`;
+              link.href = imgBase64;
+              link.click();
+            }, 800);
+            return;
+          }
+
+          // 發送至 Google Apps Script Web App
+          await fetch(window.GAS_EMAIL_ENDPOINT, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              email: targetEmail,
+              studentCode: state.studentCode,
+              imageBase64: imgBase64
+            })
+          });
+
+          btnSendEmailCert.disabled = false;
+          btnSendEmailCert.textContent = "✓ 證書已寄出";
+          if (emailStatusMsg) {
+            emailStatusMsg.classList.remove("sending");
+            emailStatusMsg.classList.add("success");
+            emailStatusMsg.textContent = `🎉 榮譽證書已成功寄送至您的信箱：${targetEmail}，請查收！`;
+          }
+          playTone(987.77);
+        } catch (err) {
+          console.error("發信失敗:", err);
+          btnSendEmailCert.disabled = false;
+          btnSendEmailCert.textContent = "✉️ 重新寄送";
+          if (emailStatusMsg) {
+            emailStatusMsg.classList.remove("sending");
+            emailStatusMsg.classList.add("error");
+            emailStatusMsg.textContent = "寄送遇到小問題，已為您保留證書，您可以直接點擊「下載榮譽證書」儲存！";
+          }
+        }
+      });
+    }
   }
 
   function drawCertificate(canvas, studentCode, stamps) {
@@ -3181,7 +3280,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ctx.fillStyle = "#334155";
     ctx.font = "18px 'Noto Sans TC'";
-    ctx.fillText(`茲證明 同學【代號：${studentCode}】`, canvas.width / 2, 185);
+    ctx.fillText(`茲證明 海洋探索家【${studentCode}】`, canvas.width / 2, 185);
     ctx.fillText("成功完成《海蛞蝓愛海蛞蝓：波光城最閃亮的婚禮》全書探索與反思挑戰，", canvas.width / 2, 220);
     ctx.fillText("展現了同理傾聽、打破刻板印象與尊重多元差異的美好特質！", canvas.width / 2, 250);
 

@@ -1270,8 +1270,14 @@
               </div>
 
               <div class="cert-input-section">
-                <label for="student-code">請輸入班級座號（例如 50101，守護個資）：</label>
-                <input type="text" id="student-code" placeholder="如：50101" maxlength="10">
+                <div class="cert-field-group">
+                  <label for="student-code">證書上想留下什麼稱呼？可填暱稱或代號：</label>
+                  <input type="text" id="student-code" placeholder="例如：小海兔 或 50101" maxlength="12">
+                </div>
+                <div class="cert-field-group">
+                  <label for="student-email">電子信箱（選填，將證書寄給您）：</label>
+                  <input type="email" id="student-email" placeholder="例如：ocean@example.com">
+                </div>
                 <button class="btn-generate-cert" id="btn-create-cert">🎓 生成榮譽證書</button>
               </div>
             </div>
@@ -1283,8 +1289,10 @@
               <canvas id="cert-canvas" width="800" height="560"></canvas>
               <div class="cert-actions">
                 <button class="btn-action-primary" id="btn-download-cert">📥 下載榮譽證書（PNG）</button>
+                <button class="btn-action-secondary" id="btn-send-email-cert">✉️ 寄送證書至信箱</button>
                 <button class="btn-action-secondary" id="btn-close-cert">關閉</button>
               </div>
+              <div id="email-send-status" class="email-status-msg hidden"></div>
             </div>
           </div>
         </div>
