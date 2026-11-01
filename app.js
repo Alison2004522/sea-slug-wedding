@@ -1,5 +1,5 @@
 // [Google Apps Script 郵件發送端點配置] 如已部署 Web App 請在此填入網址
-window.GAS_EMAIL_ENDPOINT = "";
+window.GAS_EMAIL_ENDPOINT = "https://script.google.com/macros/s/AKfycbzKq1mWH7eWWdr0NKlEWKKNS-t-RZXB9g3vZfRrBpJ2S8xghNPjW0tGLz8I6mFp2-QAuw/exec";
 
 /**
  * 海蛞蝓愛海蛞蝓：波光城最閃亮的婚禮
